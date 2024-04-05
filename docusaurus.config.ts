@@ -45,6 +45,7 @@ const config: Config = {
                         keywords: ["quote", "example", "quiz"],
                         extendDefaults: true,
                     },
+                    showLastUpdateTime: true
                 },
                 blog: false,
                 theme: {
