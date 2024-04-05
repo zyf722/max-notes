@@ -43,7 +43,7 @@ const config: Config = {
                     remarkPlugins: [remarkMath],
                     rehypePlugins: [rehypeKatex],
                     admonitions: {
-                        keywords: ["quote", "example", "quiz"],
+                        keywords: ["details", "quote", "example", "quiz"],
                         extendDefaults: true,
                     },
                     showLastUpdateTime: true
