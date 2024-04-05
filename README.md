@@ -7,4 +7,4 @@ Currently this repo is hosted on [GitHub Pages](https://zyf722.github.io/max-not
 ## License
 [MIT](./LICENSE) for the code and configuration files.
 
-[CC BY-NC-ND 4.0](./LICENSE.contents) for all other content.
+[CC BY-NC-ND 4.0](./LICENSE.content) for all other content.
