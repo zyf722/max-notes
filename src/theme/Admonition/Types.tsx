@@ -7,8 +7,8 @@ import DefaultAdmonitionTypes from "@theme-original/Admonition/Types";
 
 type BaseAdmonitionType = "secondary" | "info" | "success" | "danger" | "note" | "tip" | "warning" | "important" | "caution";
 
-function AdmonitionFactory(baseType: BaseAdmonitionType, icon: IconProp, defaultTitle: string) {
-    return function (props) {
+function AdmonitionFactory(baseType: BaseAdmonitionType, icon: IconProp, defaultTitle: string, callback?: (standardAdmonition: JSX.Element) => JSX.Element) {
+    const standardAdmonitionFunc = function (props) {
         return (
             <Admonition type={baseType} title={props.title ?? defaultTitle} icon={<FontAwesomeIcon icon={icon} size="1x" />}>
                 {props.children}
@@ -16,6 +16,13 @@ function AdmonitionFactory(baseType: BaseAdmonitionType, icon: IconProp, default
             </Admonition>
         );
     };
+    if (callback) {
+        return function (props) {
+            return callback(standardAdmonitionFunc(props));
+        };
+    } else {
+        return standardAdmonitionFunc;
+    }
 }
 
 function details(props) {
