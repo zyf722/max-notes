@@ -7,10 +7,13 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
 
+import Quiz from "@site/src/components/Quiz";
+
 library.add(fab, fas, far); // Add all icons to the library so you can use them without importing them individually.
 
 export default {
     // Re-use the default mapping
     ...MDXComponents,
     FAIcon: FontAwesomeIcon,
+    Quiz: Quiz,
 };

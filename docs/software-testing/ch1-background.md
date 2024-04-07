@@ -43,8 +43,6 @@
 
 ## 小测验
 
-import Quiz from "@site/src/components/Quiz";
-
 :::quiz
 <br />
 
