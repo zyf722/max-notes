@@ -34,7 +34,7 @@ const AdmonitionTypes = {
     // After adding the custom types, remember to add them to the `admonitions` field in `docusaurus.config.ts`.
     "quote": AdmonitionFactory("note", "quote-left", "引用"),
     "example": AdmonitionFactory("info", "lightbulb", "示例"),
-    "quiz": AdmonitionFactory("secondary", "question", "小测验"),
+    "quiz": AdmonitionFactory("secondary", "question", "问题摘录与参考回答"),
     "details": details
 };
 
