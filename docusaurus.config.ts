@@ -46,7 +46,7 @@ const config: Config = {
                         keywords: ["details", "quote", "example", "quiz"],
                         extendDefaults: true,
                     },
-                    showLastUpdateTime: true
+                    showLastUpdateTime: true,
                 },
                 blog: false,
                 theme: {
@@ -69,14 +69,14 @@ const config: Config = {
                 {
                     href: "https://zyf722.github.io",
                     label: "Blog",
-                    position: "right"
+                    position: "right",
                 },
                 {
                     href: "https://github.com/zyf722/max-notes",
                     position: "right",
                     className: "header-github-link",
                     "aria-label": "GitHub Repository",
-                }
+                },
             ],
         },
         docs: {
