@@ -56,6 +56,8 @@ const config: Config = {
         ],
     ],
 
+    plugins: ["docusaurus-plugin-image-zoom"],
+
     themeConfig: {
         navbar: {
             title: "Max's Notes",
