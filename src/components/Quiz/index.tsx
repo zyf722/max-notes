@@ -12,7 +12,7 @@ export default function Quiz({ children, question }: QuizProp): JSX.Element {
             <Heading as="h3">{question}</Heading>
             <div style={{ display: "flex" }}>
                 <div style={{ fontWeight: "bold" }}>答：</div>
-                <div>{children}</div>
+                <div style={{ width: "100%" }}>{children}</div>
             </div>
         </React.Fragment>
     );
