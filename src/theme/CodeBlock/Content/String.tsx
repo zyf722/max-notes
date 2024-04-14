@@ -5,7 +5,7 @@ import {
     parseCodeBlockTitle,
     parseLanguage,
     parseLines,
-    containsLineNumbers,
+    // containsLineNumbers,
     useCodeWordWrap,
 } from "@docusaurus/theme-common/internal";
 import { Highlight, type Language } from "prism-react-renderer";
@@ -54,7 +54,7 @@ export default function CodeBlockString({
         magicComments,
     });
     const showLineNumbers =
-    showLineNumbersProp ?? containsLineNumbers(metastring);
+        showLineNumbersProp ?? true; // containsLineNumbers(metastring);
 
     return (
         <Container
@@ -62,8 +62,8 @@ export default function CodeBlockString({
             className={clsx(
                 blockClassName,
                 language &&
-          !blockClassName.includes(`language-${language}`) &&
-          `language-${language}`,
+                !blockClassName.includes(`language-${language}`) &&
+                `language-${language}`,
             )}>
             {title && <div className={styles.codeBlockTitle}>{title}</div>}
             <div className={styles.codeBlockContent}>
