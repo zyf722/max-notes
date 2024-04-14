@@ -127,6 +127,10 @@ const config: Config = {
                 dark: "neutral",
             },
         },
+
+        zoom: {
+            selector: ".markdown img",
+        },
     } satisfies Preset.ThemeConfig,
 
     stylesheets: [
