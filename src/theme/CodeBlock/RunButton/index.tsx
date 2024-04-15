@@ -36,8 +36,8 @@ export default function RunButton({ code, language, className }: Props): JSX.Ele
     return (
         <button
             type="button"
-            aria-label="在外部运行代码"
-            title="运行"
+            aria-label="在 LiveCodes 上运行"
+            title="在 LiveCodes 上运行"
             className={clsx(
                 "clean-btn",
                 className,
