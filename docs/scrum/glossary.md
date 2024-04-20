@@ -147,7 +147,7 @@ Scrum Guide 并不阻止同一成员担任多个 Scrum 角色。
 
 ## V
 ### Values
-- 当承诺、勇气、专注、开放和尊重（commitment, courage, focus, openness, respect）的价值被 Scrum Team 所体现和实践时，Scrum 的支柱——透明度、检查和适应——就会**活跃起来**，并为每个人**建立信任**
+- 当**承诺、勇气、专注、开放和尊重**（Commitment, Courage, Focus, Openness, Respect）的价值被 Scrum Team 所体现和实践时，Scrum 的支柱——**透明、检视、适应**（Transparency, Inspection, Adaptation）——就会**活跃起来**，并为每个人**建立信任**
 - Scrum Team 成员在与 Scrum Event, Role 和 Artifact 一起工作时学习和探索这些价值
 
 ### Velocity
