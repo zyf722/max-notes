@@ -9,4 +9,4 @@ import DocCardList from '@theme/DocCardList';
 
 <DocCardList />
 
-[^1]: 基于[郭宏安译本](https://m.douban.com/book/subject/6021092/)，译林出版社，2021年4月第1版。
+[^1]: 基于[郭宏安译本](https://book.douban.com/subject/35308997/)，译林出版社，2021年4月第1版。
