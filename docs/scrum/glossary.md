@@ -142,8 +142,6 @@ Scrum Guide 并不阻止同一成员担任多个 Scrum 角色。
 
 ## T
 ### Technical Debt
-> the typically unpredictable overhead of maintaining the product, often caused by less than ideal design decisions, contributing to the total cost of ownership. May exist unintentionally in the Increment or introduced purposefully to realize value earlier.
-
 - 产品维护的典型的、不可预测的开销，通常由不太理想的设计决策引起，从而增加了所有权的总成本
 - 可能无意中存在于 Increment 中，也可能是为了更早实现价值而故意引入的
 
