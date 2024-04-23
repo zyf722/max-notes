@@ -49,3 +49,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+  
+  crawl:
+    name: Crawl the website
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Algolia crawler
+        uses: algolia/algoliasearch-crawler-github-actions@v1
+        id: algolia_crawler
+        with: # mandatory parameters
+          crawler-user-id: ${{ secrets.CRAWLER_USER_ID }}
+          crawler-api-key: ${{ secrets.CRAWLER_API_KEY }}
+          algolia-app-id: ${{ secrets.ALGOLIA_APP_ID }}
+          algolia-api-key: ${{ secrets.ALGOLIA_API_KEY }}
+          site-url: 'https://zyf722.github.io/max-notes'
+          crawler-name: 'zyf722io'
