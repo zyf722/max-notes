@@ -30,7 +30,7 @@ sidebar_position: 5
 - 多线程环境下需要额外注意以避免多次实例化
 - **单例类难以被模拟，因此可能会导致测试困难**
 
-:::info
+:::ref
 有关单例模式与测试，可参见：
 - [Singletons are Pathological Liars](https://testing.googleblog.com/2008/08/by-miko-hevery-so-you-join-new-project.html)
 - [TotT: Using Dependancy Injection to Avoid Singletons](https://testing.googleblog.com/2008/05/tott-using-dependancy-injection-to.html)

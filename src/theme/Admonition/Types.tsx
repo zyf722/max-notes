@@ -35,6 +35,7 @@ const AdmonitionTypes = {
     "quote": AdmonitionFactory("note", "quote-left", "引用"),
     "example": AdmonitionFactory("info", "lightbulb", "示例"),
     "quiz": AdmonitionFactory("secondary", "question", "问题摘录与参考回答"),
+    "ref": AdmonitionFactory("info", "link", "参考"),
     "details": details
 };
 
