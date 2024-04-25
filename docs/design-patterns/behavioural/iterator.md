@@ -41,6 +41,12 @@ sidebar_position: 3
 
 :::
 
+:::note
+
+如果需要限制树中的节点都为同一类型的值，可以使用 `TypeVar` 和 `Generic` 来实现泛型。
+
+:::
+
 ```python
 # [x] Pattern: Iterator
 # Iterator pattern provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation
