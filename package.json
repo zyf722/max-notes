@@ -26,6 +26,7 @@
         "@mdx-js/react": "^3.0.0",
         "clsx": "^2.0.0",
         "docusaurus-plugin-image-zoom": "^2.0.0",
+        "livecodes": "^0.5.0",
         "prism-react-renderer": "^2.3.0",
         "query-string": "^9.0.0",
         "raw-loader": "^4.0.2",
