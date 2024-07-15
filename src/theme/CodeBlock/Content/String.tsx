@@ -105,7 +105,7 @@ export default function CodeBlockString({
                         />
                     )}
                     <CopyButton className={styles.codeButton} code={code} />
-                    <RunButton className={styles.codeButton} code={code} language={language} />
+                    <RunButton className={styles.codeButton} code={code} language={language} metastring={metastring} />
                 </div>
             </div>
         </Container>

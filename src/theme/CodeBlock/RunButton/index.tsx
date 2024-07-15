@@ -7,9 +7,9 @@
 
 import React, { useCallback } from "react";
 import clsx from "clsx";
-import queryString from "query-string";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import IconSuccess from "@theme/Icon/Success";
+import { getPlaygroundUrl } from "livecodes";
 
 import styles from "./styles.module.css";
 
@@ -17,19 +17,39 @@ export interface Props {
     readonly code: string;
     readonly language: string;
     readonly className?: string;
+    readonly metastring: string;
 }
 
-export default function RunButton({ code, language, className }: Props): JSX.Element {
+export default function RunButton({
+    code,
+    language,
+    className,
+    metastring = "",
+}: Props): JSX.Element {
     const openInNewTab = (url: string): void => {
         const newWindow = window.open(url, "_blank", "noopener,noreferrer");
         if (newWindow) newWindow.opener = null;
     };
 
     const onClickUrl = useCallback(() => {
-        const url = `https://livecodes.io?${queryString.stringify({
-            [language]: code,
-            console: "open"
-        })}`;
+        const codeType = metastring.includes("markup")
+            ? "markup"
+            : metastring.includes("style ")
+                ? "style"
+                : "script";
+        const url = getPlaygroundUrl({
+            loading: "eager",
+            params: {
+                console: "open",
+            },
+            config: {
+                [codeType]: {
+                    language,
+                    content: code,
+                },
+                activeEditor: codeType,
+            },
+        });
         openInNewTab(url);
     }, [code]);
 
@@ -38,14 +58,15 @@ export default function RunButton({ code, language, className }: Props): JSX.Ele
             type="button"
             aria-label="在 LiveCodes 上运行"
             title="在 LiveCodes 上运行"
-            className={clsx(
-                "clean-btn",
-                className,
-                styles.copyButton
-            )}
-            onClick={onClickUrl}>
+            className={clsx("clean-btn", className, styles.copyButton)}
+            onClick={onClickUrl}
+        >
             <span className={styles.copyButtonIcons} aria-hidden="true">
-                <FontAwesomeIcon icon={["far", "paper-plane"]} size="1x" className={styles.copyButtonIcon} />
+                <FontAwesomeIcon
+                    icon={["far", "paper-plane"]}
+                    size="1x"
+                    className={styles.copyButtonIcon}
+                />
                 <IconSuccess className={styles.copyButtonSuccessIcon} />
             </span>
         </button>
