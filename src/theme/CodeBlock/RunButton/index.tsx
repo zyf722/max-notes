@@ -34,7 +34,7 @@ export default function RunButton({
     const onClickUrl = useCallback(() => {
         const codeType = metastring.includes("markup")
             ? "markup"
-            : metastring.includes("style ")
+            : metastring.includes("style")
                 ? "style"
                 : "script";
         const url = getPlaygroundUrl({
