@@ -155,7 +155,7 @@ class DoorHelper:
 
 这个例子就**违反**了接口隔离原则。`DoorHelper` 类包含了三个方法，按照设计，当用户只希望安装门时，他也必须初始化这个包含了所有方法的类。这样，用户就被迫使用了他不需要的功能。
 
-为了遵守接口隔福原则，我们可以将 `DoorHelper` 类拆分成三个类：`DoorPainter`, `DoorInstaller` 和 `DoorCloser`。
+为了遵守接口隔离原则，我们可以将 `DoorHelper` 类拆分成三个类：`DoorPainter`, `DoorInstaller` 和 `DoorCloser`。
 
 ## 依赖反转原则（D）
 > **依赖反转原则**（**D**ependency Inversion Principle, **DIP**）：高层模块不应该依赖于底层模块，二者都应该依赖于抽象；抽象不应该依赖于实现，实现应该依赖于抽象。
@@ -191,7 +191,7 @@ class Door:
         self.accessory = Accessory()  # Dependency
 
     def install(self):
-        print(f'Installing the door with {self.accessory.type} {self.accessory.size}')
+        print(f'Installing the door with {self.accessory.actype} {self.accessory.size}')
 
 if __name__ == "__main__":
     door = Door()
@@ -216,7 +216,7 @@ class Accessory:
     size: int
 
     def __init__(self, actype: str, size: int):
-        self.type = actype
+        self.actype = actype
         self.size = size
 
 @dataclasses
@@ -225,7 +225,7 @@ class Door:
         self.accessory = accessory
 
     def install(self):
-        print(f'Installing the door with {self.accessory.type} {self.accessory.size}')
+        print(f'Installing the door with {self.accessory.actype} {self.accessory.size}')
 
 if __name__ == "__main__":
     door = Door(
