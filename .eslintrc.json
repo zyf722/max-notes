@@ -21,29 +21,12 @@
     ],
     "rules": {
         "indent": "off",
-        "@stylistic/ts/indent": [
-            "error",
-            4
-        ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        "quotes": [
-            "error",
-            "double"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "no-multi-spaces": [
-            "error"
-        ],
-        "object-curly-spacing": [
-            "error",
-            "always"
-        ],
+        "@stylistic/ts/indent": ["error", 4],
+        "linebreak-style": ["error", "windows"],
+        "quotes": ["error", "double"],
+        "semi": ["error", "always"],
+        "no-multi-spaces": ["error"],
+        "object-curly-spacing": ["error", "always"],
         "no-constant-condition": "off",
         "no-multiple-empty-lines": [
             "error",
@@ -56,14 +39,19 @@
         "eol-last": "error",
         "@typescript-eslint/no-var-requires": "off",
         "eslint-plugin-import/no-unresolved": "off",
-        "import/no-unresolved": "off"
+        "import/no-unresolved": "off",
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_[^_].*$|^_$",
+                "varsIgnorePattern": "^_[^_].*$|^_$",
+                "caughtErrorsIgnorePattern": "^_[^_].*$|^_$"
+            }
+        ]
     },
     "settings": {
         "import/parsers": {
-            "@typescript-eslint/parser": [
-                ".ts",
-                ".tsx"
-            ]
+            "@typescript-eslint/parser": [".ts", ".tsx"]
         },
         "import/resolver": {
             "typescript": {
