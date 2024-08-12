@@ -3,6 +3,7 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { AlphaTabWebPackPlugin } from "@coderline/alphatab/webpack";
 
 const config: Config = {
     title: "Max's Notes",
@@ -62,7 +63,40 @@ const config: Config = {
         ],
     ],
 
-    plugins: ["docusaurus-plugin-image-zoom"],
+    plugins: [
+        "docusaurus-plugin-image-zoom",
+        () => ({
+            name: "docusaurus-alphatab",
+            injectHtmlTags() {
+                return {};
+            },
+            configureWebpack(config) {
+                return {
+                    plugins: [
+                        // Copy the Font and SoundFont Files to the output
+                        new AlphaTabWebPackPlugin({
+                            assetOutputDir: config.output.path,
+                        }),
+                    ],
+                    resolve: {
+                        fallback: {
+                            fs: false,
+                            buffer: false,
+                            path: false,
+                            os: false,
+                            util: false,
+                            assert: false,
+                            stream: false,
+                            crypto: false,
+                            constants: false,
+                            child_process: false,
+                            module: false,
+                        },
+                    },
+                };
+            },
+        }),
+    ],
 
     themeConfig: {
         navbar: {

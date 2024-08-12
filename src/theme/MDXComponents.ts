@@ -8,6 +8,7 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
 
 import Quiz from "@site/src/components/Quiz";
+import AlphaTab from "@site/src/components/AlphaTab";
 
 library.add(fab, fas, far); // Add all icons to the library so you can use them without importing them individually.
 
@@ -15,5 +16,6 @@ export default {
     // Re-use the default mapping
     ...MDXComponents,
     FAIcon: FontAwesomeIcon,
-    Quiz: Quiz,
+    Quiz,
+    AlphaTab,
 };
