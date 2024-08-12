@@ -17,3 +17,8 @@ sidebar_position: 1
 此外，这里和我的[博客](https://zyf722.github.io)并不相同。博客主要用于记录一些有趣内容，整体基调比较轻松；而这里则是与**技术**或**思考**更加相关。
 
 好了——多余的话就说到这里，希望这里能给你带来一些帮助。
+
+## 特别感谢
+- [![Docusaurus|{{inline: true}}](https://docusaurus.io/img/docusaurus.svg) Docusaurus](https://docusaurus.io/)：静态文档站点构建工具，本站点所用的核心框架 ([MIT](https://github.com/facebook/docusaurus/blob/main/LICENSE))
+- [![LiveCodes|{{inline: true}}](https://livecodes.io/docs/img/livecodes-logo.svg) LiveCodes](https://livecodes.io/)：客户端侧、浏览器端代码运行环境 ([MIT](https://github.com/live-codes/livecodes/blob/develop/LICENSE))
+- [![AlphaTab|{{inline: true}}](../static/img/credit/alphatab.svg)](https://www.alphatab.net/)：浏览器端乐谱渲染引擎及播放器 ([MPL-2.0](https://github.com/CoderLine/alphaTab/blob/main/LICENSE))
