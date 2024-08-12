@@ -26,19 +26,23 @@ const defaultOptions: MDXImgOptions = {
 
 export default function MDXImg(props: Props): JSX.Element {
     // ![alt|options](url)
-    // options is an optional json string with type MDXImgOptions
+    // options is an optional javascript object string with type MDXImgOptions
+
+    // Remove width and height props
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { width, height, ...restProps } = props;
 
     // Use \| to escape the pipe character in the alt text
     // Here use regex to match the alt text and options
-    const [_, alt, options] = props.alt.match(/^(.+?)(?<!\\)\|(.*)$/) ?? ["", props.alt, ""];
+    const [_, alt, options] = props.alt.match(/^(.+?)(?<!\\)\|(.*)$/) ?? ["", restProps.alt, ""];
     const imgOptions = { ...defaultOptions, ...strToObj(options) };
     const img = (
         <img
             decoding="async"
             loading="lazy"
-            {...props}
+            {...restProps}
             alt={alt}
-            className={transformImgClassName(props.className, !imgOptions.inline && imgOptions.zoom)}
+            className={transformImgClassName(restProps.className, !imgOptions.inline && imgOptions.zoom)}
             style={imgOptions.inline ? { display: "inline", verticalAlign: "middle", maxHeight: "2em" } : undefined}
         />
     );
