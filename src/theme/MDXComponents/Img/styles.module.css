@@ -1,7 +1,4 @@
 .img {
   height: auto;
-  display: block;
-  margin: 0 auto;
-  place-self: center;
   max-width: 50%;
 }

@@ -137,7 +137,7 @@ const config: Config = {
         },
 
         zoom: {
-            selector: ".markdown img",
+            selector: ".markdown img.zoomable",
         },
     } satisfies Preset.ThemeConfig,
 
