@@ -9,4 +9,6 @@ import DocCardList from '@theme/DocCardList';
 
 <DocCardList />
 
+---
+
 [^1]: 基于[张小松译本](http://www.cmpedu.com/books/book/2011328.htm)，机械工业出版社，2023年3月第1版。
