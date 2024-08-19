@@ -1,4 +1,3 @@
-import React from "react";
 import Admonition from "@theme-original/Admonition";
 import Details from "@theme-original/Details";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,11 +7,10 @@ import DefaultAdmonitionTypes from "@theme-original/Admonition/Types";
 type BaseAdmonitionType = "secondary" | "info" | "success" | "danger" | "note" | "tip" | "warning" | "important" | "caution";
 
 function AdmonitionFactory(baseType: BaseAdmonitionType, icon: IconProp, defaultTitle: string, callback?: (standardAdmonition: JSX.Element) => JSX.Element) {
-    const standardAdmonitionFunc = function (props) {
+    const standardAdmonitionFunc = function (props: { title: string, children: Element[] }) {
         return (
             <Admonition type={baseType} title={props.title ?? defaultTitle} icon={<FontAwesomeIcon icon={icon} size="1x" />}>
                 {props.children}
-                {props.icon}
             </Admonition>
         );
     };
@@ -25,7 +23,7 @@ function AdmonitionFactory(baseType: BaseAdmonitionType, icon: IconProp, default
     }
 }
 
-function details(props) {
+function details(props: { title: string, children: Element[] }) {
     return <Details summary={props.title ?? "隐藏内容"}>{props.children}</Details>;
 }
 
