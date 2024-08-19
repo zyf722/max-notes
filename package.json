@@ -5,6 +5,7 @@
     "scripts": {
         "docusaurus": "docusaurus",
         "start": "docusaurus start",
+        "clear-start": "docusaurus clear && docusaurus start",
         "build": "docusaurus build",
         "swizzle": "docusaurus swizzle",
         "deploy": "docusaurus deploy",
@@ -25,6 +26,7 @@
         "@fortawesome/free-solid-svg-icons": "^6.5.2",
         "@fortawesome/react-fontawesome": "^0.2.0",
         "@mdx-js/react": "^3.0.0",
+        "@myriaddreamin/typst-ts-node-compiler": "^0.5.0-rc6",
         "babel-plugin-macros": "^3.1.0",
         "clsx": "^2.0.0",
         "docusaurus-plugin-image-zoom": "^2.0.0",

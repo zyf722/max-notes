@@ -22,3 +22,4 @@ sidebar_position: 1
 - [![Docusaurus|{{inline: true}}](https://docusaurus.io/img/docusaurus.svg) Docusaurus](https://docusaurus.io/)：静态文档站点构建工具，本站点所用的核心框架 ([MIT](https://github.com/facebook/docusaurus/blob/main/LICENSE))
 - [![LiveCodes|{{inline: true}}](https://livecodes.io/docs/img/livecodes-logo.svg) LiveCodes](https://livecodes.io/)：客户端侧、浏览器端代码运行环境 ([MIT](https://github.com/live-codes/livecodes/blob/develop/LICENSE))
 - [![AlphaTab|{{inline: true}}](../static/img/credit/alphatab.svg)](https://www.alphatab.net/)：浏览器端乐谱渲染引擎及播放器 ([MPL-2.0](https://github.com/CoderLine/alphaTab/blob/main/LICENSE))
+- [`typst.ts`](https://github.com/Myriad-Dreamin/typst.ts)：Typst Node.js SDK ([Apache 2.0](https://github.com/Myriad-Dreamin/typst.ts/blob/main/LICENSE))
