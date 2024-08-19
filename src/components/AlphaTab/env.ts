@@ -1,6 +1,6 @@
-import config from "@site/docusaurus.config";
+import staticConfig from "@site/docusaurus.config.static";
 
 export default {
-    fontDirectory: `${config.baseUrl}font/`,
-    soundFontDirectory: `${config.baseUrl}soundfont/`,
+    fontDirectory: `${staticConfig.baseUrl}font/`,
+    soundFontDirectory: `${staticConfig.baseUrl}soundfont/`,
 } as const;
