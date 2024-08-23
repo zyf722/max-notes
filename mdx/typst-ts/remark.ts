@@ -1,24 +1,46 @@
 import type { Plugin, Transformer } from "unified";
 import type { Nodes } from "mdast";
 import { visit } from "unist-util-visit";
-import mdxTypstTs from "./model";
 
-interface RemarkTypstOptions {}
+interface RemarkTypstOptions {
+    isInline: (value: string) => boolean;
+    shared: {
+        lang: string;
+        className: {
+            typstInline: string;
+        };
+        meta: {
+            remark: string;
+            rehype: string;
+        };
+    };
+}
 
-const plugin: Plugin<[RemarkTypstOptions?]> = (
+const defaultOptions: RemarkTypstOptions = {
+    isInline: (value) => value.startsWith("^") && value.endsWith("^"),
+    shared: {
+        lang: "typst",
+        className: {
+            typstInline: "typst-inline",
+        },
+        meta: {
+            remark: "remark-typst-ts",
+            rehype: "rehype-typst-ts",
+        },
+    },
+};
+
+const plugin: Plugin<[Readonly<RemarkTypstOptions>?]> = (
     options?: RemarkTypstOptions
 ): Transformer => {
+    const settings = options || defaultOptions;
     const transformer = (ast: Nodes) => {
         visit(ast, (node) => {
-            if (
-                node.type == "inlineCode" &&
-                node.value.startsWith("^") &&
-                node.value.endsWith("^")
-            ) {
+            if (node.type == "inlineCode" && settings.isInline(node.value)) {
                 node.value = node.value.slice(1, -1);
                 node.data ||= {};
                 node.data.hProperties = {
-                    className: [mdxTypstTs.className.typstInline],
+                    className: [settings.shared.className.typstInline],
                 };
             }
         });

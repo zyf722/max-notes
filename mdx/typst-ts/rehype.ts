@@ -8,13 +8,36 @@ import {
     NodeCompiler,
     CompileArgs,
 } from "@myriaddreamin/typst-ts-node-compiler";
-import mdxTypstTs from "./model";
-import assert from "assert";
 
 interface RehypeTypstOptions {
-    compile?: CompileArgs;
+    compileArgs?: CompileArgs;
     errorColor: string;
+    shared: {
+        lang: string;
+        className: {
+            typstInline: string;
+        };
+        meta: {
+            remark: string;
+            rehype: string;
+        };
+    };
 }
+
+const defaultOptions: RehypeTypstOptions = {
+    compileArgs: undefined,
+    errorColor: "#cc0000",
+    shared: {
+        lang: "typst",
+        className: {
+            typstInline: "typst-inline",
+        },
+        meta: {
+            remark: "remark-typst-ts",
+            rehype: "rehype-typst-ts",
+        },
+    },
+};
 
 interface DisplayModeOptions {
     autoSetPage: boolean;
@@ -25,15 +48,12 @@ interface RenderResult {
     baselinePosition: number | undefined;
 }
 
-const plugin: Plugin<[RehypeTypstOptions?]> = (
+const plugin: Plugin<[Readonly<RehypeTypstOptions>?]> = (
     options?: RehypeTypstOptions
 ): Transformer => {
-    const settings = options || {
-        compile: undefined,
-        errorColor: undefined,
-    };
+    const settings = options || defaultOptions;
 
-    const compiler = NodeCompiler.create(settings.compile);
+    const compiler = NodeCompiler.create(settings.compileArgs);
 
     const renderToSVGString = (
         code: string,
@@ -107,11 +127,11 @@ $pin("l1")${code}$
 
             // This class can be generated from markdown with ` ```typst `.
             const languageTypst = classes.includes(
-                `language-${mdxTypstTs.lang}`
+                `language-${settings.shared.lang}`
             );
             // This class is for text math (inline, ` `^math^` `).
             const inlineTypst = classes.includes(
-                mdxTypstTs.className.typstInline
+                settings.shared.className.typstInline
             );
 
             // Any class is fine.
@@ -196,7 +216,7 @@ $pin("l1")${code}$
                     ancestors: [...parents, element],
                     cause,
                     place: element.position,
-                    source: mdxTypstTs.meta.rehype,
+                    source: settings.shared.meta.rehype,
                 });
 
                 console.log(cause.message);
