@@ -3,6 +3,7 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import remarkLiveCodes from "remark-livecodes";
 import remarkTypstTs from "./mdx/typst-ts/remark";
 import rehypeTypstTs from "./mdx/typst-ts/rehype";
 import { AlphaTabWebPackPlugin } from "@coderline/alphatab/webpack";
@@ -16,7 +17,7 @@ const config: Config = {
                 docs: {
                     sidebarPath: "./sidebars.ts",
                     routeBasePath: "/",
-                    remarkPlugins: [remarkMath, remarkTypstTs],
+                    remarkPlugins: [remarkMath, remarkTypstTs, remarkLiveCodes],
                     rehypePlugins: [rehypeKatex, rehypeTypstTs],
                     admonitions: {
                         keywords: [

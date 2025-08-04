@@ -17,9 +17,9 @@
     },
     "dependencies": {
         "@coderline/alphatab": "^1.4.0-alpha.1118",
-        "@docusaurus/core": "^3.7.0",
-        "@docusaurus/preset-classic": "^3.7.0",
-        "@docusaurus/theme-mermaid": "^3.7.0",
+        "@docusaurus/core": "^3.8.1",
+        "@docusaurus/preset-classic": "^3.8.1",
+        "@docusaurus/theme-mermaid": "^3.8.1",
         "@fortawesome/fontawesome-svg-core": "^6.5.2",
         "@fortawesome/free-brands-svg-icons": "^6.5.2",
         "@fortawesome/free-regular-svg-icons": "^6.5.2",
@@ -29,8 +29,7 @@
         "@myriaddreamin/typst-ts-node-compiler": "^0.5.0-rc6",
         "babel-plugin-macros": "^3.1.0",
         "clsx": "^2.0.0",
-        "docusaurus-plugin-image-zoom": "^2.0.0",
-        "livecodes": "^0.5.0",
+        "docusaurus-plugin-image-zoom": "^3.0.1",
         "prism-react-renderer": "^2.3.0",
         "query-string": "^9.0.0",
         "raw-loader": "^4.0.2",
@@ -40,9 +39,9 @@
         "remark-math": "^6.0.0"
     },
     "devDependencies": {
-        "@docusaurus/module-type-aliases": "^3.7.0",
-        "@docusaurus/tsconfig": "^3.7.0",
-        "@docusaurus/types": "^3.7.0",
+        "@docusaurus/module-type-aliases": "^3.8.1",
+        "@docusaurus/tsconfig": "^3.8.1",
+        "@docusaurus/types": "^3.8.1",
         "@stylistic/eslint-plugin": "^1.7.0",
         "@stylistic/eslint-plugin-ts": "^1.7.0",
         "@types/node": "^20.11.28",
@@ -52,6 +51,7 @@
         "eslint-import-resolver-typescript": "^3.6.1",
         "eslint-plugin-import": "^2.29.1",
         "eslint-plugin-jest": "^27.9.0",
+        "remark-livecodes": "^0.4.1",
         "typescript": "~5.2.2"
     },
     "browserslist": {
