@@ -38,7 +38,7 @@ sidebar_position: 10
 这里为 `visit_file` 和 `visit_directory` 扩展参数 `parent`，以便在访问文件时能够知道其父目录，从而通过参数构造出的隐式栈实现打印文件绝对路径。
 :::
 
-```python
+```python livecodes console=full
 # [x] Pattern: Visitor
 # Visitor pattern represents an operation to be performed on the elements of an object structure
 

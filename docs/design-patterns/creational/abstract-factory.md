@@ -22,7 +22,7 @@ sidebar_position: 2
 
 下面的示例展示了一个抽象工厂模式的实现，其中每个工厂都产出 `Door` 和 `DoorFitter` 对象，且只有对应的 `DoorFitter` 才能安装对应的 `Door`。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Abstract Factory
 # A class that has multiple method that creates objects of another class
 # The factory class has a pair of object types

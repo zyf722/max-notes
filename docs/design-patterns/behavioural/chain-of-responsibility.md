@@ -39,7 +39,7 @@ sidebar_position: 1
 
 下面的示例展示了一个门的宽度和高度验证的责任链。如果门的宽度或高度超过了规定的最大值，责任链会拒绝门的请求。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Chain of Responsiblity
 # Provides a chain of processing objects, each of which can decide to either process the request or pass it on to the next handler in the chain
 

@@ -42,7 +42,7 @@ sidebar_position: 3
 
 下面是一个使用组合模式的 Python 示例，其中有一个 `FileObject` 抽象类，`File` 和 `Directory` 类分别实现了该抽象类。`FileSizeCalculator` 类接受一个 `FileObject` 对象，计算其大小。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Composite
 # To treat a group of objects the same way as a single instance of the object
 

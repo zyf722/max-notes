@@ -44,7 +44,7 @@ sidebar_position: 4
 ## 代码示例
 以下代码展示了一个简单的原型模式解释。要注意的是，以下代码严格来说并不是原型模式的实现，而是通过 Python 的 `copy` 模块实现了对象的深拷贝。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Prototype
 # Create object based on an existing object through cloning
 

@@ -39,7 +39,7 @@ sidebar_position: 7
 
 下面的代码示例展示了一个使用代理模式的 Python 示例，其中 `Door` 作为服务对象，`FrontDoor` 作为服务对象的实现，`DoorOpener` 作为代理对象，控制对 `FrontDoor` 的访问。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Proxy
 # To provide a surrogate or placeholder for another object to control access to it
 

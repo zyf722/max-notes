@@ -32,7 +32,7 @@ sidebar_position: 4
 
 下面以一个现实街区的例子展示了一个简单的中介者模式的实现。在这个示例中，`Resident`类代表了街区的居民（组件），`StreetOffice`类代表了街区办公室（中介者），`CallEvent`和`TransferEvent`类代表了居民之间的通信事件。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Mediator
 # Mediator pattern provides a way to encapsulate the interaction between objects
 

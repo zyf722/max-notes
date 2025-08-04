@@ -40,7 +40,7 @@ sidebar_position: 6
 
 下面的代码示例展示了一个使用享元模式的 Python 示例，其中 `DoorSpec` 作为享元对象，`DoorSpecFactory` 作为享元工厂，`Door` 作为享元对象的上下文。`assert` 语句用于验证享元对象是否被正确共享。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Flyweight
 # To share common state between multiple objects
 

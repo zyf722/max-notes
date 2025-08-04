@@ -39,7 +39,7 @@ sidebar_position: 1
 
 用户可以通过调用 `deliver_door` 方法来获得一个门对象（无论是哪个工厂），并且可以使用该对象的继承方法 `area` 和多态方法 `open`。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Factory method
 # A class that delegates the creation of objects to its subclasses,
 # allowing each subclass to decide which object to create.

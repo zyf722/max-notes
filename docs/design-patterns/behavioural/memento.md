@@ -52,7 +52,7 @@ sidebar_position: 5
 
 下面的示例展示了一个简单的备忘录模式的实现。在这个示例中，`RandomGenerator`类代表了原发器，`RandomCaretaker`类代表了负责人，`main`函数代表了客户端。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Memento
 # Memento pattern provides a way to capture and restore an object's internal state without exposing its internal structure
 

@@ -28,7 +28,7 @@ sidebar_position: 5
 
 下面的代码示例展示了一个使用外观模式的 Python 示例，其中 `Fitter` 和 `Installer` 作为不同功能的子系统，但用户不需要知道这两个类之间是如何协调的，而只关心门最后能被安装，因此 `BuildingTeam` 作为外观类，将 `Fitter` 和 `Installer` 封装在一起，提供了一个简单的接口 `build`。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Facade
 # To provide a simple interface to a complex system
 

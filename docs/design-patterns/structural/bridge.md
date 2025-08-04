@@ -41,7 +41,7 @@ sidebar_position: 2
 
 下面是一个使用桥接模式的 Python 示例，其中 `Door` 是抽象类，`DoorSpec` 是实现类。`FrontDoor` 是对 `Door` 的具体实现，`WoodenDoorSpec` 是对 `DoorSpec` 的具体实现。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Bridge
 # Allows to separate an abstraction from its implementation so that the two can vary independently
 

@@ -10,7 +10,7 @@ SOLID 是面向对象设计的五个基本原则的首字母缩写。这五个�
 把有不同的改变原因的事物耦合在一起的设计是糟糕的；将其分离开来，使得每个类或模块只有一个改变的理由，能够使得各个功能更加独立，更容易维护。
 
 ### 代码示例
-```python
+```python livecodes console=full
 class Door:
     def __init__(self, width, height):
         self.width = width
@@ -44,7 +44,7 @@ class Door:
 与之相反的是，开闭原则反对直接修改现有代码来添加新功能。这样做可能会导致不可预测的副作用，甚至破坏现有功能。
 
 ### 代码示例
-```python
+```python livecodes console=full
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -90,7 +90,7 @@ class AdvancedCircleDoor(CircleDoor):
 里氏替换原则描述了继承关系的基本特征。如果一个子类不能完全替换其基类，那么继承关系可能存在问题。
 
 ### 代码示例
-```python
+```python livecodes console=full
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -123,7 +123,7 @@ def print_area(door: Door):
 接口隔离原则鼓励将大接口拆分成多个小接口，以便客户端只需知道与其相关的方法。其目的在于降低系统的耦合度，提高系统的内聚性。
 
 ### 代码示例
-```python
+```python livecodes console=full
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -170,7 +170,7 @@ class DoorHelper:
 ### 代码示例
 以依赖注入为例，注入前：
 
-```python
+```python livecodes console=full
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
 为了解耦，我们可以将依赖关系移至方法的参数中，从而使得具体的值仅在**类的外部**确定：
 
-```python
+```python livecodes console=full
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 

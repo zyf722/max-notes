@@ -17,7 +17,17 @@ const config: Config = {
                 docs: {
                     sidebarPath: "./sidebars.ts",
                     routeBasePath: "/",
-                    remarkPlugins: [remarkMath, remarkTypstTs, remarkLiveCodes],
+                    remarkPlugins: [
+                        remarkMath,
+                        remarkTypstTs,
+                        [
+                            remarkLiveCodes,
+                            {
+                                config: { appLanguage: "zh-CN" },
+                                height: "500px",
+                            },
+                        ],
+                    ],
                     rehypePlugins: [rehypeKatex, rehypeTypstTs],
                     admonitions: {
                         keywords: [

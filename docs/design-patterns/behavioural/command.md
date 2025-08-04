@@ -34,7 +34,7 @@ sidebar_position: 2
 
 下面的示例展示了一个简单的命令模式的实现。在这个示例中，`Teller`类代表了接收者，`Command`类代表了命令对象，`TellCommand`类代表了具体的命令，`Alarm`类代表了发送者，`Class`类代表了客户端。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Command
 # Command pattern turns a request into a stand-alone object that contains all information about the request
 

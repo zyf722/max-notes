@@ -41,7 +41,7 @@ sidebar_position: 9
 
 下面的示例以做作业为例展示了模板方法模式的实现。在这个示例中，`Homework`类代表了作业，`MathHomework`和`PEHomework`类代表了具体的作业。具体的作业类通过重写父类的方法来实现自己的逻辑。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Template Method
 # Template method pattern defines the skeleton of an algorithm in the superclass but lets subclasses override specific steps of the algorithm without changing its structure
 

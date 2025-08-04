@@ -47,7 +47,7 @@ sidebar_position: 3
 
 :::
 
-```python
+```python livecodes console=full
 # [x] Pattern: Iterator
 # Iterator pattern provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation
 

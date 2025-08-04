@@ -42,7 +42,7 @@ sidebar_position: 3
 ## 代码示例
 下面展示了一个没有主管类的建造者模式的实现，其中 `DoorBuilder` 类负责构建 `Door` 对象。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Builder
 # To prevent constructor pollution, we use a builder class to create an object
 # This will enable you to write functional-programming-style code

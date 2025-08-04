@@ -46,7 +46,7 @@ sidebar_position: 5
 
 :::
 
-```python
+```python livecodes console=full
 # [x] Pattern: Singleton
 # Ensure a class has only one instance and provide a global point of access to it
 

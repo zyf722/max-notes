@@ -42,7 +42,7 @@ sidebar_position: 8
 
 下面的示例展示了一个简单的策略模式的实现。在这个示例中，`Strategy`类代表了策略接口，`TravelStrategy`类代表了具体的策略，`WalkStrategy`和`CarStrategy`类代表了具体的策略实现。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Strategy
 # Strategy pattern defines a family of algorithms, encapsulates each one, and makes them interchangeable
 

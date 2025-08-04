@@ -38,7 +38,7 @@ sidebar_position: 6
 
 下面通过一个简单的新闻订阅系统展示了观察者模式的实现。在这个示例中，`NewsPress`类代表了发布者，`NewsReader`类代表了订阅者。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Subscriber
 # Subscriber pattern defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically
 

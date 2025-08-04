@@ -38,7 +38,7 @@ sidebar_position: 4
 
 下面使用 Python 实现了一个简单的装饰器模式示例，其中有一个 `Door` 抽象类，`FrontDoor` 类实现了该抽象类，`DoorAlarm` 类则通过**组合**接受 `Door` 对象，并在其 `open` 方法中添加了额外的行为。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Decorator
 # To add behavior to an object without affecting its class
 

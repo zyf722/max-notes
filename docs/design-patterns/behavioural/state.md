@@ -39,7 +39,7 @@ sidebar_position: 7
 此外，为实现此机制还声明了一个字符串到状态类型的映射，以便在 `change_state` 方法中根据字符串创建对应的状态对象。该字典被声明为 `ClassVar` 以避免 `dataclass` 将其视为实例变量。
 :::
 
-```python
+```python livecodes console=full
 # [x] Pattern: State
 # State pattern allows an object to alter its behavior when its internal state changes
 

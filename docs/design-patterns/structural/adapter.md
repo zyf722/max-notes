@@ -44,7 +44,7 @@ sidebar_position: 1
 
 通过适配器模式，我们可以将 `Window` 类的接口转换为 `Door` 接口，使得 `Fitter` 类可以使用 `Window` 类的实例。
 
-```python
+```python livecodes console=full
 # [x] Pattern: Adapter
 # To fit an object to an interface
 
