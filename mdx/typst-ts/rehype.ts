@@ -81,7 +81,7 @@ $pin("l1")${code}$
 `;
 
         const autoSetPageCode =
-            "#set page(height: auto, width: auto, margin: 0pt)\n";
+            "#set page(height: auto, width: auto, margin: 0pt);\n";
         const displayTypstTemplate = `${
             displayModeOptions.autoSetPage ? autoSetPageCode : ""
         }${code}`;
