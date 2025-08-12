@@ -2,11 +2,11 @@
 Uses [typst.ts](https://github.com/Myriad-Dreamin/typst.ts) to render [Typst](https://typst.app/) documents into SVGs in the following grammar:
 
 - Block
-```md
+````md
 ```typst
 document content here
 ```
-```
+````
 
 - Inline
 ```md
