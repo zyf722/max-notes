@@ -4,9 +4,25 @@ import type * as Preset from "@docusaurus/preset-classic";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkLiveCodes from "remark-livecodes";
+import remarkEmbedder from "@remark-embedder/core";
+import oembedTransformer from "@remark-embedder/transformer-oembed";
 import remarkTypstTs from "./mdx/typst-ts/remark";
 import rehypeTypstTs from "./mdx/typst-ts/rehype";
 import { AlphaTabWebPackPlugin } from "@coderline/alphatab/webpack";
+import type { Config as RemarkEmbedderConfig } from "@remark-embedder/transformer-oembed";
+import { ProxyAgent, setGlobalDispatcher } from "undici";
+
+const dispatcher = new ProxyAgent("http://127.0.0.1:3081");
+setGlobalDispatcher(dispatcher);
+
+const oembedConfig: RemarkEmbedderConfig = ({ url, provider }) => {
+    // See https://oembed.com/providers.json
+    if (provider.provider_name === "YouTube") {
+        return {
+            params: { maxheight: 500 },
+        };
+    }
+};
 
 const config: Config = {
     ...staticConfig,
@@ -25,6 +41,14 @@ const config: Config = {
                             {
                                 config: { appLanguage: "zh-CN" },
                                 height: "500px",
+                            },
+                        ],
+                        [
+                            remarkEmbedder,
+                            {
+                                transformers: [
+                                    [oembedTransformer, oembedConfig],
+                                ],
                             },
                         ],
                     ],
