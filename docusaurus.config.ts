@@ -1,3 +1,4 @@
+import process from "process";
 import staticConfig from "./docusaurus.config.static";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
@@ -12,8 +13,10 @@ import { AlphaTabWebPackPlugin } from "@coderline/alphatab/webpack";
 import type { Config as RemarkEmbedderConfig } from "@remark-embedder/transformer-oembed";
 import { ProxyAgent, setGlobalDispatcher } from "undici";
 
-const dispatcher = new ProxyAgent("http://127.0.0.1:3081");
-setGlobalDispatcher(dispatcher);
+if (!process.env.CI) {
+    const dispatcher = new ProxyAgent("http://127.0.0.1:3081");
+    setGlobalDispatcher(dispatcher);
+}
 
 const oembedConfig: RemarkEmbedderConfig = ({ url, provider }) => {
     // See https://oembed.com/providers.json

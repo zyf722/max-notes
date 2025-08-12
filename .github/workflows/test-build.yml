@@ -3,6 +3,9 @@ name: Test Build
 on:
   workflow_dispatch:
 
+env:
+  CI: true
+
 jobs:
   test-deploy:
     name: Test deployment
