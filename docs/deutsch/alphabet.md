@@ -35,7 +35,7 @@ sidebar_position: 1
 | **Y** | Ypsilon | /ˈʏpsilɔn/ | "Ip-si-lon" | 英语是 "Why" /waɪ/ |
 | **Z** | Zett | /t͡sɛt/ | "Tset" | 英语是 "Zee" 或 "Zed" /ziː/, /zɛd/ |
 
-## 特殊字母 (Sonderzeichen)
+## 特殊字母 (Sonderbuchstaben)
 
 这四个字母通常不会单独背诵，但在拼写时会用到它们的名字。
 
@@ -44,7 +44,11 @@ sidebar_position: 1
 | **Ä, ä** | Aeh, A-Umlaut | /ɛː/ | 变元音 A |
 | **Ö, ö** | Oeh, O-Umlaut | /øː/ | 变元音 O |
 | **Ü, ü** | Ueh, U-Umlaut | /yː/ | 变元音 U |
-| **ß** | Eszett / Scharfes S | /ɛsˌtsɛt/ | "Eszett" (意为 s-z) 或 "Scharfes S" (意为 sharp s)。<br/>常用于表示 ss 即 /s/ 音，但不在单词开头使用。 |
+| **ẞ, ß** | Eszett, Scharfes S | /ɛsˌtsɛt/ | 常用于表示 ss 即 /s/ 音，不会出现在单词开头。<br/>作大写时写作 "[ẞ](https://de.wikipedia.org/wiki/Gro%C3%9Fes_%C3%9F)"，但通常会使用 "SS" 代替。 |
+
+:::note
+对于非德语键盘布局，可通过 [PowerAccent](https://github.com/damienleroy/PowerAccent) 或 [PowerToys 中的 QuickAccent](https://learn.microsoft.com/en-us/windows/powertoys/quick-accent) 功能快速输入上述四个字母。
+:::
 
 ## 字母歌 (Das Alphabet-Lied)
 
