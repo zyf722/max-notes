@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # 德语字母表
 
 ## 德语字母表 (Das deutsche Alphabet)
@@ -37,11 +41,13 @@
 
 | 字母 | 德语名称 | IPA | 解释 |
 | :-- | :--- | :--- | :--- |
-| **Ä, ä** | A-Umlaut | /ɛː/ | 变元音 A |
-| **Ö, ö** | O-Umlaut | /øː/ | 变元音 O |
-| **Ü, ü** | U-Umlaut | /yː/ | 变元音 U |
+| **Ä, ä** | Aeh, A-Umlaut | /ɛː/ | 变元音 A |
+| **Ö, ö** | Oeh, O-Umlaut | /øː/ | 变元音 O |
+| **Ü, ü** | Ueh, U-Umlaut | /yː/ | 变元音 U |
 | **ß** | Eszett / Scharfes S | /ɛsˌtsɛt/ | "Eszett" (意为 s-z) 或 "Scharfes S" (意为 sharp s)。<br/>常用于表示 ss 即 /s/ 音，但不在单词开头使用。 |
 
-## 字母歌 (Das Alphabetlied)
+## 字母歌 (Das Alphabet-Lied)
+
+<AlphaTab file="alphatab/alphabetlied.mxl" />
 
 https://www.youtube.com/watch?v=zxQXEyMMC0E
