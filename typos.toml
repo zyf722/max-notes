@@ -1,0 +1,19 @@
+# Check config spec at https://github.com/crate-ci/typos/blob/master/docs/reference.md
+
+[files]
+ignore-vcs = true # Respect .gitignore
+extend-exclude = [
+    "*",
+    "!docs",
+    "!docs/**",
+    "docs/deutsch/*.md", # Ignore German Learning Notes
+]
+
+[default]
+extend-ignore-re = [
+    "\\/.+\\/",             # Regex literal
+    "\\[[0-9a-fA-F]{7}\\]", # Git short hash
+]
+
+[default.extend-words]
+Adaptee = "Adaptee"

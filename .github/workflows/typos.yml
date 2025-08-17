@@ -1,0 +1,19 @@
+name: typos
+
+env:
+  CLICOLOR: 1
+
+on: [push, pull_request]
+
+jobs:
+  spell-check:
+    name: Spell Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check typos on code
+        uses: crate-ci/typos@master
+        with:
+          config: ./typos.toml
