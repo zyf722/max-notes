@@ -20,7 +20,13 @@ sidebar_position: 2
 
 ## 代码示例
 
-下面的示例展示了一个抽象工厂模式的实现，其中每个工厂都产出 `Door` 和 `DoorFitter` 对象，且只有对应的 `DoorFitter` 才能安装对应的 `Door`。
+下面的示例展示了一个抽象工厂模式的实现。这个模式用于创建一系列**相关的**产品，而无需指定其具体的类。
+
+在这个例子中，我们有两种产品系列：木制系列（`WoodenDoor`, `Carpenter`）和铁制系列（`IronDoor`, `Welder`）。每种系列都包含一个门（`Door`）和一个安装工（`DoorFitter`）。
+
+`DoorFactory` 是**抽象工厂**接口，它定义了创建 `Door` 和 `DoorFitter` 的方法。`WoodenDoorFactory` 和 `IronDoorFactory` 是**具体工厂**，它们分别实现了 `DoorFactory` 接口，用于创建相应系列的产品。例如，`WoodenDoorFactory` 会创建 `WoodenDoor` 和 `Carpenter`。
+
+客户端代码通过 `DoorFactory` 接口与工厂进行交互。这样，客户端就可以使用任何具体工厂来创建产品，而无需关心产品的具体实现。这确保了创建出的产品（如门和安装工）是相互兼容的（例如，木匠安装木门），从而保证了产品家族的一致性。
 
 ```python livecodes console=full
 # [x] Pattern: Abstract Factory
@@ -30,82 +36,117 @@ sidebar_position: 2
 # Why we use it
 # When there are interrelated dependencies with not only one object
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
+# --- Abstract Products ---
 
-@dataclass
 class Door(ABC):
-    width: int
-    height: int
-
-    def area(self):
-        return self.width * self.height
-    
+    """Abstract Product A: Door"""
     @abstractmethod
-    def _cut_material(self):
-        raise NotImplementedError
+    def get_description(self) -> str:
+        pass
 
-    @abstractmethod
-    def _install_components(self):
-        raise NotImplementedError
-
-@dataclass
-class IronDoor(Door):
-    def _cut_material(self):
-        print('Cutting iron sheets')
-
-    def _install_components(self):
-        print('Installing iron components')
-
-@dataclass
 class DoorFitter(ABC):
-    name: str
-
-    def hello(self):
-        print(f"Hello, I'm {self.name}")
-    
+    """Abstract Product B: DoorFitter"""
     @abstractmethod
-    def fit_door(self, door: Door):
-        raise NotImplementedError
+    def get_description(self) -> str:
+        pass
 
-@dataclass
-class IronDoorFitter(DoorFitter):
+    @abstractmethod
+    def fit(self, door: Door) -> None:
+        """The fitter fits a door."""
+        pass
 
-    def fit_door(self, door: IronDoor):
-        print(f"Fitting iron door with area {door.area()}")
+# --- Concrete Products of Variant 1 (Wooden) ---
+
+class WoodenDoor(Door):
+    """Concrete Product A1: Wooden Door"""
+    def get_description(self) -> str:
+        return "I am a wooden door."
+
+class Carpenter(DoorFitter):
+    """Concrete Product B1: Carpenter (fits wooden doors)"""
+    def get_description(self) -> str:
+        return "I am a carpenter."
+
+    def fit(self, door: Door) -> None:
+        print(f"The carpenter is fitting a {door.get_description().lower()}")
+
+# --- Concrete Products of Variant 2 (Iron) ---
+
+class IronDoor(Door):
+    """Concrete Product A2: Iron Door"""
+    def get_description(self) -> str:
+        return "I am an iron door."
+
+class Welder(DoorFitter):
+    """Concrete Product B2: Welder (fits iron doors)"""
+    def get_description(self) -> str:
+        return "I am a welder."
+
+    def fit(self, door: Door) -> None:
+        print(f"The welder is fitting an {door.get_description().lower()}")
+
+# --- Abstract Factory ---
 
 class DoorFactory(ABC):
-    @staticmethod
+    """
+    The Abstract Factory interface declares a set of methods for creating each of
+    the abstract products.
+    """
     @abstractmethod
-    def make_door(self, width: int, height: int) -> Door:
-        raise NotImplementedError
+    def create_door(self) -> Door:
+        pass
 
-    @staticmethod
     @abstractmethod
-    def make_fitter(self, name: str) -> DoorFitter:
-        raise NotImplementedError
+    def create_fitter(self) -> DoorFitter:
+        pass
 
-class IronDoorFactory:
-    @staticmethod
-    def make_door(width: int, height: int) -> IronDoor:
-        door = IronDoor(width, height)
-        door._cut_material()
-        door._install_components()
-        return door
+# --- Concrete Factories ---
 
-    @staticmethod
-    def make_fitter(name: str) -> IronDoorFitter:
-        return IronDoorFitter(name)
+class WoodenDoorFactory(DoorFactory):
+    """
+    Concrete Factory 1: Creates a family of wooden products.
+    """
+    def create_door(self) -> WoodenDoor:
+        return WoodenDoor()
 
+    def create_fitter(self) -> Carpenter:
+        return Carpenter()
 
+class IronDoorFactory(DoorFactory):
+    """
+    Concrete Factory 2: Creates a family of iron products.
+    """
+    def create_door(self) -> IronDoor:
+        return IronDoor()
 
-def main():
-    iron_door = IronDoorFactory.make_door(100, 200)
-    print(f"Now we have an iron door with area {iron_door.area()}")
-    iron_fitter = IronDoorFactory.make_fitter('John')
-    iron_fitter.hello()
-    iron_fitter.fit_door(iron_door)
+    def create_fitter(self) -> Welder:
+        return Welder()
+
+# --- Client Code ---
+
+def client_code(factory: DoorFactory) -> None:
+    """
+    The client code works with factories and products only through abstract
+    types: DoorFactory, Door, and DoorFitter. This lets you pass any factory or
+    product subclass to the client code without breaking it.
+    """
+    door = factory.create_door()
+    fitter = factory.create_fitter()
+
+    print(f"Door: {door.get_description()}")
+    print(f"Fitter: {fitter.get_description()}")
+    fitter.fit(door)
+
+def main() -> None:
+    """Main execution function."""
+    print("Client: Testing client code with the WoodenDoorFactory type:")
+    client_code(WoodenDoorFactory())
+    print("-" * 20)
+    print("Client: Testing the same client code with the IronDoorFactory type:")
+    client_code(IronDoorFactory())
 
 if __name__ == '__main__':
     main()

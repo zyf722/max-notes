@@ -50,7 +50,15 @@ sidebar_position: 5
 
 ## 代码示例
 
-下面的示例展示了一个简单的备忘录模式的实现。在这个示例中，`RandomGenerator`类代表了原发器，`RandomCaretaker`类代表了负责人，`main`函数代表了客户端。
+下面的示例展示了一个简单的备忘录模式的实现。
+
+`Editor` 是**原发器**，它拥有一个可能会随时间改变的内部状态（`_state`）。它提供了 `save()` 方法来创建一个包含当前状态的**备忘录**（`Memento`）对象，以及 `restore()` 方法来从备忘录中恢复状态。
+
+`Memento` 类负责存储原发器的状态。关键在于，它对外部（除了原发器）只暴露有限的接口（如 `get_name()`），从而保护了内部状态的完整性，防止外部直接修改。
+
+`History` 是**负责人**，它负责管理备忘录对象列表。它知道何时需要保存（`backup()`）和恢复（`undo()`）编辑器的状态，但它不直接访问备忘录的内部状态，只是持有和管理这些备忘录对象。
+
+客户端代码通过与负责人交互来触发状态的保存和恢复，从而实现了对编辑器状态的快照和回滚功能，而没有破坏编辑器的封装性。
 
 ```python livecodes console=full
 # [x] Pattern: Memento
@@ -59,63 +67,115 @@ sidebar_position: 5
 # Why we use it
 # Allows an object to be restored to its previous state without revealing its internal structure
 
-from dataclasses import dataclass
-from random import randint
+from __future__ import annotations
+import random
+import string
 from typing import List
 
+# --- Memento ---
+class Memento:
+    """
+    The Memento interface provides a way to retrieve the memento's metadata,
+    such as creation time or name. However, it doesn't expose the Originator's
+    state.
+    """
+    def __init__(self, state: str) -> None:
+        self._state = state
+        self._date = "".join(random.choices(string.ascii_uppercase, k=8)) # Simulate a timestamp
 
-@dataclass
-class RandomGenerator:
-    current_number: int
+    def get_state(self) -> str:
+        """The Originator uses this method when restoring its state."""
+        return self._state
 
-    @dataclass
-    class Memento:
-        state: int
+    def get_name(self) -> str:
+        """The Caretaker uses this method to display mementos."""
+        return f"({self._date}) / ({self._state[:9]}...)"
 
-    def generate(self):
-        self.current_number = randint(1, 100)
-        return self.current_number
+# --- Originator ---
+class Editor:
+    """
+    The Originator holds some important state that may change over time. It also
+    defines a method for saving the state inside a memento and another method
+    for restoring the state from it.
+    """
+    def __init__(self, state: str) -> None:
+        self._state = state
+        print(f"Editor: My initial state is: {self._state}")
 
-    def save(self):
-        return RandomGenerator.Memento(self.current_number)
+    def do_something(self) -> None:
+        """Originator's business logic may affect its internal state."""
+        print("Editor: I'm doing something important.")
+        self._state = self._generate_random_string(30)
+        print(f"Editor: and my state has changed to: {self._state}")
 
-    def restore(self, memento: Memento):
-        self.current_number = memento.state
+    def _generate_random_string(self, length: int = 10) -> str:
+        return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
+    def save(self) -> Memento:
+        """Saves the current state inside a memento."""
+        return Memento(self._state)
 
-@dataclass
-class RandomCaretaker:
-    originator: RandomGenerator
-    mementos: List[RandomGenerator.Memento]
+    def restore(self, memento: Memento) -> None:
+        """Restores the Originator's state from a memento object."""
+        self._state = memento.get_state()
+        print(f"Editor: My state has changed to: {self._state}")
 
-    def __init__(self, originator: RandomGenerator):
-        self.originator = originator
-        self.mementos = []
+# --- Caretaker ---
+class History:
+    """
+    The Caretaker doesn't depend on the Concrete Memento class. Therefore, it
+    doesn't have access to the originator's state, stored inside the memento.
+    It works with all mementos via the base Memento interface.
+    """
+    def __init__(self, originator: Editor) -> None:
+        self._mementos: List[Memento] = []
+        self._originator = originator
 
-    def generate(self):
-        num = self.originator.generate()
-        self.mementos.append(self.originator.save())
-        return num
+    def backup(self) -> None:
+        print("\nHistory: Saving Originator's state...")
+        self._mementos.append(self._originator.save())
 
-    def restore(self):
-        if len(self.mementos) == 0:
+    def undo(self) -> None:
+        if not self._mementos:
+            print("History: No mementos to restore from.")
             return
-        memento = self.mementos.pop()
-        self.originator.restore(memento)
 
+        memento = self._mementos.pop()
+        print(f"History: Restoring state to: {memento.get_name()}")
+        try:
+            self._originator.restore(memento)
+        except Exception:
+            self.undo()
 
-def main():
-    originator = RandomGenerator(0)
-    caretaker = RandomCaretaker(originator)
+    def show_history(self) -> None:
+        print("\nHistory: Here's the list of mementos:")
+        for memento in self._mementos:
+            print(memento.get_name())
 
-    for _ in range(10):
-        num = caretaker.generate()
-        print(f"Generated number: {num}")
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the Memento pattern."""
+    editor = Editor("Super-duper-super-puper-super.")
+    history = History(editor)
 
-    for _ in range(5):
-        caretaker.restore()
-        print(f"Restored number: {originator.current_number}")
+    history.backup()
+    editor.do_something()
 
+    history.backup()
+    editor.do_something()
+
+    history.backup()
+    editor.do_something()
+
+    history.show_history()
+
+    print("\nClient: Now, let's rollback!\n")
+    history.undo()
+
+    print("\nClient: Once more!\n")
+    history.undo()
+    
+    history.show_history()
 
 if __name__ == "__main__":
     main()

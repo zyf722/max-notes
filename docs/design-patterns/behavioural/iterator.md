@@ -31,7 +31,13 @@ sidebar_position: 3
 
 ## 代码示例
 
-下面以二叉树的中序遍历为例，展示了一个简单的迭代器模式的实现。在这个示例中，`TreeNode`类代表了树的节点，`Tree`类代表了树，`TreeIterator`类代表了迭代器，`main`函数代表了客户端。
+下面以二叉树的中序遍历为例，展示了一个简单的迭代器模式的实现。
+
+`Tree` 是一个聚合类（或集合），它包含一个树形结构。`InOrderIterator` 是一个具体的迭代器，它实现了遍历 `Tree` 的特定算法（中序遍历）。
+
+关键在于，`Tree` 类实现了 `__iter__` 方法，这使得它成为了一个**可迭代对象**。当客户端代码（例如 `for` 循环）需要遍历 `Tree` 时，它会调用 `__iter__` 方法来获取一个 `InOrderIterator` 的实例。这个迭代器对象维护着遍历的状态（例如，使用一个栈来辅助遍历），并实现了 `__next__` 方法来逐个返回树中的节点。
+
+这种方式将遍历的复杂逻辑从 `Tree` 类中分离出来，使得客户端可以像遍历一个简单的列表一样遍历一个复杂的树结构，而无需关心其内部实现。
 
 :::info
 
@@ -54,71 +60,91 @@ sidebar_position: 3
 # Why we use it
 # Decouples the client from the collection, allowing the client to traverse the collection without knowing its internal structure
 
+from __future__ import annotations
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Generic, List, Optional, TypeVar
 
+T = TypeVar("T")
 
 @dataclass
-class TreeNode:
-    value: Any
-    left: Optional["TreeNode"]
-    right: Optional["TreeNode"]
+class TreeNode(Generic[T]):
+    """A node in a binary tree."""
+    value: T
+    left: Optional[TreeNode[T]] = None
+    right: Optional[TreeNode[T]] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Node({self.value})"
 
-
-@dataclass
-class Tree:
-    root: TreeNode
-
-    # def __iter__(self):
-    #     return TreeIterator(self)
-
-@dataclass
-class TreeIterator:
+class InOrderIterator(Iterator[TreeNode[T]]):
     """
-    In-order traversal of a binary tree
+    Concrete Iterator for in-order traversal of a binary tree.
+    This implements Python's iterator protocol.
     """
+    def __init__(self, root: Optional[TreeNode[T]]):
+        self._stack: List[TreeNode[T]] = []
+        self._current: Optional[TreeNode[T]] = root
+        # Initially, push all left children to the stack
+        self._push_left_children(self._current)
 
-    tree: Tree
-    stack: List[TreeNode]
+    def _push_left_children(self, node: Optional[TreeNode[T]]) -> None:
+        while node:
+            self._stack.append(node)
+            node = node.left
 
-    def __init__(self, tree: Tree):
-        self.tree = tree
-        self.stack = [self.tree.root]
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if not self.stack:
+    def __next__(self) -> TreeNode[T]:
+        if not self._stack:
             raise StopIteration
-
-        node = self.stack.pop()
+        
+        node = self._stack.pop()
+        
         if node.right:
-            self.stack.append(node.right)
-        if node.left:
-            self.stack.append(node.left)
-
+            self._push_left_children(node.right)
+            
         return node
 
+@dataclass
+class Tree(Iterable[TreeNode[T]]):
+    """
+    The Aggregate (or Collection) class. It has a method to create an iterator.
+    By implementing __iter__, it becomes compatible with Python's for-in loops.
+    """
+    root: Optional[TreeNode[T]]
 
-def main():
+    def __iter__(self) -> InOrderIterator[T]:
+        """Creates and returns an in-order iterator for the tree."""
+        return InOrderIterator(self.root)
+
+def main() -> None:
+    """Client code demonstrating the Iterator pattern."""
+    # Construct a sample binary tree:
+    #        1
+    #       / \
+    #      2   3
+    #     / \ / \
+    #    4  5 6  7
     root = TreeNode(
         1,
-        TreeNode(2, TreeNode(4, None, None), TreeNode(5, None, None)),
-        TreeNode(3, TreeNode(6, None, None), TreeNode(7, None, None)),
+        TreeNode(2, TreeNode(4), TreeNode(5)),
+        TreeNode(3, TreeNode(6), TreeNode(7)),
     )
     tree = Tree(root)
 
-    iterator = TreeIterator(tree)
-    for node in iterator:
+    print("Iterating through the tree using the custom in-order iterator:")
+    # The Tree object is iterable, so we can use it in a for loop.
+    # This implicitly calls tree.__iter__() to get the iterator.
+    for node in tree:
         print(node)
 
-    # for node in tree:
-    #     print(node)
+    print("\nDemonstrating that multiple iterators can exist independently:")
+    iterator1 = iter(tree)
+    iterator2 = iter(tree)
 
+    print(f"Iterator 1, first element: {next(iterator1)}")
+    print(f"Iterator 2, first element: {next(iterator2)}")
+    print(f"Iterator 1, second element: {next(iterator1)}")
+    print(f"Iterator 2, second element: {next(iterator2)}")
 
 if __name__ == "__main__":
     main()

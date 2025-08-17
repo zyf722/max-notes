@@ -35,9 +35,13 @@ sidebar_position: 1
 
 ## 代码示例
 
-下面的示例展示了一个简单的有关门的工厂方法。门有两种类型：铁门和木门。`DoorFactory` 是一个创建者，它有一个工厂方法 `make_door`，该方法返回一个门对象。`IronDoorFactory` 和 `WoodenDoorFactory` 是具体的创建者，它们分别返回铁门和木门。
+下面的示例展示了一个简单的有关门的工厂方法。`DoorFactory` 是一个抽象的**创建者**，它定义了一个抽象的 `create_door` **工厂方法**来创建 `Door`（门）对象，并提供了一个 `deliver_door` 方法来定义交付门的通用流程。
 
-用户可以通过调用 `deliver_door` 方法来获得一个门对象（无论是哪个工厂），并且可以使用该对象的继承方法 `area` 和多态方法 `open`。
+`IronDoorFactory` 和 `WoodenDoorFactory` 是具体的创建者，它们分别实现了 `create_door` 方法，以创建特定类型的门（`IronDoor` 和 `WoodenDoor`）。
+
+`Door` 是**产品**接口，`IronDoor` 和 `WoodenDoor` 是具体的产品。
+
+客户端代码通过与 `DoorFactory` 交互来获取一个门对象，而无需关心具体是哪个工厂在生产，也无需知道具体创建了哪种类型的门。这使得添加新的门类型变得容易，而不会影响客户端代码。
 
 ```python livecodes console=full
 # [x] Pattern: Factory method
@@ -48,95 +52,102 @@ sidebar_position: 1
 # When constructing a class that does not know the type of the objects it will create
 # In other words, we use a universal method interface to create objects, but the specific implementation is left to the subclasses
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
+# --- Product Interface and Concrete Products ---
 
-@dataclass
 class Door(ABC):
-    width: int
-    height: int
+    """
+    The Product interface declares the operations that all concrete products must
+    implement.
+    """
+    def __init__(self, width: int, height: int) -> None:
+        self.width = width
+        self.height = height
 
-    def area(self):
+    def get_area(self) -> int:
+        """A method that is common to all doors."""
         return self.width * self.height
 
     @abstractmethod
-    def _cut_material(self):
-        raise NotImplementedError
+    def open(self) -> None:
+        """A method that concrete doors must implement."""
+        pass
 
-    @abstractmethod
-    def _install_components(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def open(self):
-        raise NotImplementedError
-
-
-@dataclass
 class IronDoor(Door):
-    def _cut_material(self):
-        print("Cutting iron sheets")
+    """Concrete Product: An iron door."""
+    def open(self) -> None:
+        print("Opening the heavy iron door.")
 
-    def _install_components(self):
-        print("Installing iron lock")
-
-    def open(self):
-        print("Opening iron door")
-
-
-@dataclass
 class WoodenDoor(Door):
-    def _cut_material(self):
-        print("Cutting raw timber")
+    """Concrete Product: A wooden door."""
+    def open(self) -> None:
+        print("Opening the light wooden door.")
 
-    def _install_components(self):
-        print("Installing wooden handle")
-
-    def open(self):
-        print("Opening wooden door")
-
+# --- Creator (Factory) Interface and Concrete Creators ---
 
 class DoorFactory(ABC):
+    """
+    The Creator class declares the factory method that is supposed to return an
+    object of a Product class. The Creator's subclasses usually provide the
+    implementation of this method.
+    """
     @abstractmethod
-    def make_door(self, width: int, height: int) -> Door:
-        raise NotImplementedError
+    def create_door(self, width: int, height: int) -> Door:
+        """The factory method."""
+        pass
 
     def deliver_door(self, width: int, height: int) -> Door:
-        print("Manufacturing door")
-        door = self.make_door(width, height)
-        print("Testing door")
+        """
+        The Creator's primary responsibility is not creating products. Usually,
+        it contains some core business logic that relies on Product objects,
+        returned by the factory method. Subclasses can indirectly change that
+        business logic by overriding the factory method and returning a
+        different type of product from it.
+        """
+        print("A door is being delivered...")
+        door = self.create_door(width, height)
+        print("The door has been created and is being tested:")
         door.open()
         return door
 
-
 class IronDoorFactory(DoorFactory):
-    def make_door(self, width: int, height: int) -> IronDoor:
-        door = IronDoor(width, height)
-        door._cut_material()
-        door._install_components()
-        return door
-
+    """
+    Concrete Creators override the factory method in order to change the
+    resulting product's type.
+    """
+    def create_door(self, width: int, height: int) -> IronDoor:
+        print("Manufacturing an iron door.")
+        return IronDoor(width, height)
 
 class WoodenDoorFactory(DoorFactory):
-    def make_door(self, width: int, height: int) -> WoodenDoor:
-        door = WoodenDoor(width, height)
-        door._cut_material()
-        door._install_components()
-        return door
+    """
+    Concrete Creators override the factory method in order to change the
+    resulting product's type.
+    """
+    def create_door(self, width: int, height: int) -> WoodenDoor:
+        print("Crafting a wooden door.")
+        return WoodenDoor(width, height)
 
+# --- Client Code ---
 
-def main():
-    iron_factory = IronDoorFactory()
-    iron_door = iron_factory.deliver_door(100, 200)
-    print(f"Now we have an iron door with area {iron_door.area()}\n")
-    iron_door.open()
+def client_code(factory: DoorFactory, width: int, height: int) -> None:
+    """
+    The client code works with an instance of a concrete creator, albeit through
+    its base interface. As long as the client keeps working with the creator via
+    the base interface, you can pass it any creator's subclass.
+    """
+    door = factory.deliver_door(width, height)
+    print(f"Delivered a door with an area of {door.get_area()} square units.\n")
 
-    wooden_factory = WoodenDoorFactory()
-    wooden_door = wooden_factory.deliver_door(100, 200)
-    print(f"Now we have a wooden door with area {wooden_door.area()}")
-    wooden_door.open()
+def main() -> None:
+    """Main execution function."""
+    print("App: Launched with the IronDoorFactory.")
+    client_code(IronDoorFactory(), 100, 200)
 
+    print("App: Launched with the WoodenDoorFactory.")
+    client_code(WoodenDoorFactory(), 100, 200)
 
 if __name__ == "__main__":
     main()

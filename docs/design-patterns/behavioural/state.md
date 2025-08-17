@@ -29,7 +29,15 @@ sidebar_position: 7
 
 ## 代码示例
 
-下面通过一个简单的音乐播放器示例展示了状态模式的实现。在这个示例中，`Player`类代表了上下文对象，`State`类代表了状态接口，`PlayingState`和`PausedState`类代表了具体状态类。
+下面通过一个自动售货机的例子来展示状态模式的实现。
+
+`VendingMachine` 是**上下文**对象，它维护着当前的状态（`_state`）、商品库存和投入的硬币数量。它将所有与状态相关的操作（如 `insert_coin`, `select_item`）委托给当前的状态对象来处理。
+
+`State` 是一个抽象基类，定义了所有具体状态必须实现的接口。`NoCoinState`, `HasCoinState`, `SoldState`, 和 `SoldOutState` 是**具体的状态类**。每个类都实现了在特定状态下，当用户执行操作时应该发生的行为。
+
+关键在于，**状态的转换是由状态对象自身管理的**。例如，在 `NoCoinState` 下，当用户投入硬币（`insert_coin`）时，状态会切换到 `HasCoinState`。在 `HasCoinState` 下，当用户选择商品（`select_item`）且硬币足够时，状态会切换到 `SoldState`。
+
+这种设计将每种状态的行为和转换逻辑封装在各自的类中，使得 `VendingMachine` 类本身不包含任何复杂的 `if/else` 逻辑来判断当前状态，从而使代码更加清晰和易于维护。
 
 :::note
 值得注意的是，这里的 `change_state` 方法实际上是切换状态和状态的工厂方法的结合。这种方式可以避免在客户端代码中直接创建状态对象，从而降低了耦合度。
@@ -46,101 +54,155 @@ sidebar_position: 7
 # Why we use it
 # Allows an object to change its behavior when its internal state changes
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import ClassVar, Dict, List, Literal
+from typing import List
 
+# --- Context ---
+class VendingMachine:
+    """
+    The Context defines the interface of interest to clients. It also maintains
+    a reference to an instance of a State subclass, which represents the current
+    state of the Context.
+    """
+    def __init__(self, items: List[str], price: int):
+        self._items = items
+        self._price = price
+        self._state: State = NoCoinState(self)
+        self._coins = 0
+        print(f"Vending machine initialized with {len(items)} items at price {price}.")
 
-@dataclass
+    def change_state(self, state: State) -> None:
+        """Allows changing the State object at runtime."""
+        print(f"VendingMachine: Changing state to {state.__class__.__name__}")
+        self._state = state
+
+    # --- State-dependent actions delegated to the current state object ---
+    def insert_coin(self) -> None:
+        self._state.insert_coin()
+
+    def select_item(self) -> None:
+        self._state.select_item()
+
+    def dispense_item(self) -> None:
+        self._state.dispense_item()
+
+    # --- Helper methods ---
+    def add_coin(self) -> None:
+        self._coins += 1
+        print(f"Coin inserted. Total coins: {self._coins}")
+
+    def has_enough_coins(self) -> bool:
+        return self._coins >= self._price
+
+    def has_items(self) -> bool:
+        return len(self._items) > 0
+
+    def release_item(self) -> None:
+        if self.has_items():
+            item = self._items.pop(0)
+            self._coins -= self._price
+            print(f"Dispensing {item}. Remaining coins: {self._coins}")
+        else:
+            print("Error: No items left to dispense.")
+
+# --- State Interface and Concrete States ---
 class State(ABC):
-    player: "Player"
+    """
+    The base State class declares methods that all Concrete State should
+    implement and also provides a backreference to the Context object,
+    associated with the State.
+    """
+    def __init__(self, context: VendingMachine):
+        self._context = context
 
     @abstractmethod
-    def play(self):
+    def insert_coin(self) -> None:
         pass
 
     @abstractmethod
-    def pause(self):
+    def select_item(self) -> None:
         pass
 
     @abstractmethod
-    def next(self):
+    def dispense_item(self) -> None:
         pass
 
+class NoCoinState(State):
+    """Concrete State: No coins have been inserted."""
+    def insert_coin(self) -> None:
+        self._context.add_coin()
+        self._context.change_state(HasCoinState(self._context))
 
-@dataclass
-class Player:
-    name: str
-    state: State
-    current_song_index: int
-    song_list: List[str]
+    def select_item(self) -> None:
+        print("Please insert a coin first.")
 
-    @dataclass
-    class PlayingState(State):
-        def play(self):
-            print(f"{self.player.name} is already playing {self.player.current_song}")
+    def dispense_item(self) -> None:
+        print("Cannot dispense. Please insert a coin and select an item.")
 
-        def pause(self):
-            print(f"{self.player.name} paused {self.player.current_song}")
-            self.player.change_state("paused")
+class HasCoinState(State):
+    """Concrete State: At least one coin has been inserted."""
+    def insert_coin(self) -> None:
+        self._context.add_coin()
 
-        def next(self):
-            self.player.current_song_index += 1
-            print(
-                f"{self.player.name} is playing the next song {self.player.current_song}"
-            )
+    def select_item(self) -> None:
+        if self._context.has_enough_coins():
+            print("Item selected.")
+            self._context.change_state(SoldState(self._context))
+            self._context.dispense_item()
+        else:
+            print(f"Not enough coins. Please insert more. Price is {self._context._price}")
 
-    @dataclass
-    class PausedState(State):
-        def play(self):
-            print(f"{self.player.name} resumed {self.player.current_song}")
-            self.player.change_state("playing")
+    def dispense_item(self) -> None:
+        print("Please select an item first.")
 
-        def pause(self):
-            print(f"{self.player.name} is already paused")
+class SoldState(State):
+    """Concrete State: An item has been selected and is being dispensed."""
+    def insert_coin(self) -> None:
+        print("Please wait, item is being dispensed.")
 
-        def next(self):
-            print(f"{self.player.name} is paused, cannot play the next song")
+    def select_item(self) -> None:
+        print("Already dispensing an item.")
 
-    states: ClassVar[Dict[str, type]] = {
-        "playing": PlayingState,
-        "paused": PausedState,
-    }
+    def dispense_item(self) -> None:
+        self._context.release_item()
+        if not self._context.has_items():
+            self._context.change_state(SoldOutState(self._context))
+        elif self._context.has_enough_coins():
+             self._context.change_state(HasCoinState(self._context))
+        else:
+            self._context.change_state(NoCoinState(self._context))
 
-    @property
-    def current_song(self):
-        return self.song_list[self.current_song_index]
+class SoldOutState(State):
+    """Concrete State: The machine is out of items."""
+    def insert_coin(self) -> None:
+        print("Sorry, the machine is sold out.")
 
-    def __init__(self, name: str, song_list: List[str]):
-        self.name = name
-        self.state = Player.PausedState(self)
-        self.current_song_index = 0
-        self.song_list = song_list
+    def select_item(self) -> None:
+        print("Sorry, the machine is sold out.")
 
-    def change_state(self, state: Literal["playing", "paused"]):
-        if state not in self.states:
-            raise ValueError(f"Invalid state {state}")
-        self.state = self.states[state](self)
+    def dispense_item(self) -> None:
+        print("Sorry, the machine is sold out.")
 
-    def play(self):
-        self.state.play()
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the State pattern."""
+    machine = VendingMachine(items=["Cola", "Chips"], price=2)
 
-    def pause(self):
-        self.state.pause()
+    print("\n--- Scenario 1: Successful purchase ---")
+    machine.insert_coin()
+    machine.insert_coin()
+    machine.select_item()
 
-    def next(self):
-        self.state.next()
+    print("\n--- Scenario 2: Not enough money ---")
+    machine.select_item() # Should fail
+    machine.insert_coin()
+    machine.select_item() # Should still fail
+    machine.insert_coin()
+    machine.select_item() # Should succeed
 
-
-def main():
-    player = Player("Alice", ["Song 1", "Song 2", "Song 3"])
-    player.play()
-    player.next()
-    player.pause()
-    player.next()
-    player.play()
-    player.next()
-
+    print("\n--- Scenario 3: Sold out ---")
+    machine.select_item() # Should fail, no items left
 
 if __name__ == "__main__":
     main()

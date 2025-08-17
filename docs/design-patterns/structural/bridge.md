@@ -39,7 +39,9 @@ sidebar_position: 2
 
 ## 代码示例
 
-下面是一个使用桥接模式的 Python 示例，其中 `Door` 是抽象类，`DoorSpec` 是实现类。`FrontDoor` 是对 `Door` 的具体实现，`WoodenDoorSpec` 是对 `DoorSpec` 的具体实现。
+下面是一个使用桥接模式的 Python 示例。在这个例子中，`RemoteControl`（遥控器）是**抽象**部分，它提供了控制设备的基本接口。`Device`（设备）是**实现**部分，定义了所有具体设备（如 `TV` 和 `Radio`）必须实现的接口。
+
+`RemoteControl` 类持有一个 `Device` 对象的引用，并将所有实际工作委托给这个对象。这样，我们可以独立地扩展遥控器（例如，创建一个 `AdvancedRemoteControl`）和设备（例如，添加一个新的 `DVDPlayer` 类），而不会导致类爆炸。客户端代码可以根据需要将任何遥控器与任何设备组合使用。
 
 ```python livecodes console=full
 # [x] Pattern: Bridge
@@ -49,43 +51,129 @@ sidebar_position: 2
 # When one class has some attributes that are not related to the main class
 # While these attributes can be implemented in a separate class
 
-from abc import ABC
-from dataclasses import dataclass
+from __future__ import annotations
+from abc import ABC, abstractmethod
 
+# --- Abstraction ---
+class RemoteControl:
+    """
+    The Abstraction defines the interface for the "control" part of the two
+    class hierarchies. It maintains a reference to an object of the
+    Implementation hierarchy and delegates all of the real work to this object.
+    """
+    def __init__(self, device: Device) -> None:
+        self._device = device
 
-class DoorSpec(ABC):
-    width: int
-    height: int
-    material: str
+    def toggle_power(self) -> None:
+        if self._device.is_enabled():
+            self._device.disable()
+        else:
+            self._device.enable()
+        print(f"Power toggled. Device is now {'ON' if self._device.is_enabled() else 'OFF'}.")
 
-    def area(self):
-        return self.width * self.height
+    def volume_down(self) -> None:
+        self._device.set_volume(self._device.get_volume() - 10)
+        print(f"Volume down. Current volume: {self._device.get_volume()}")
 
-@dataclass
-class WoodenDoorSpec(DoorSpec):
-    def __init__(self, width: int, height: int):
-        self.width = width
-        self.height = height
-        self.material = 'wood'
+    def volume_up(self) -> None:
+        self._device.set_volume(self._device.get_volume() + 10)
+        print(f"Volume up. Current volume: {self._device.get_volume()}")
 
-@dataclass
-class Door(ABC):
-    spec: DoorSpec
+# --- Refined Abstraction ---
+class AdvancedRemoteControl(RemoteControl):
+    """
+    You can extend classes from the Abstraction hierarchy independently from
+    device classes.
+    """
+    def mute(self) -> None:
+        self._device.set_volume(0)
+        print("Device muted.")
 
-    def tell(self):
-        print(f"Door with area {self.spec.area()} and material {self.spec.material}")
+# --- Implementation Interface ---
+class Device(ABC):
+    """
+    The Implementation defines the interface for all implementation classes.
+    It doesn't have to match the Abstraction's interface.
+    """
+    @abstractmethod
+    def is_enabled(self) -> bool:
+        pass
 
-@dataclass
-class FrontDoor(Door):
-    def __init__(self, spec: DoorSpec):
-        self.spec = spec
+    @abstractmethod
+    def enable(self) -> None:
+        pass
 
+    @abstractmethod
+    def disable(self) -> None:
+        pass
 
-def main():
-    wood_door_spec = WoodenDoorSpec(10, 20)
-    front_door = FrontDoor(wood_door_spec)
-    front_door.tell()
+    @abstractmethod
+    def get_volume(self) -> int:
+        pass
 
+    @abstractmethod
+    def set_volume(self, percent: int) -> None:
+        pass
+
+# --- Concrete Implementations ---
+class TV(Device):
+    """A concrete implementation: TV."""
+    def __init__(self) -> None:
+        self._enabled = False
+        self._volume = 30
+
+    def is_enabled(self) -> bool:
+        return self._enabled
+
+    def enable(self) -> None:
+        self._enabled = True
+
+    def disable(self) -> None:
+        self._enabled = False
+
+    def get_volume(self) -> int:
+        return self._volume
+
+    def set_volume(self, percent: int) -> None:
+        self._volume = max(0, min(100, percent))
+
+class Radio(Device):
+    """Another concrete implementation: Radio."""
+    def __init__(self) -> None:
+        self._enabled = False
+        self._volume = 20
+
+    def is_enabled(self) -> bool:
+        return self._enabled
+
+    def enable(self) -> None:
+        self._enabled = True
+
+    def disable(self) -> None:
+        self._enabled = False
+
+    def get_volume(self) -> int:
+        return self._volume
+
+    def set_volume(self, percent: int) -> None:
+        self._volume = max(0, min(100, percent))
+
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the Bridge pattern."""
+    tv = TV()
+    remote = RemoteControl(tv)
+    print("--- Testing basic remote with TV ---")
+    remote.toggle_power()
+    remote.volume_up()
+    remote.volume_down()
+
+    radio = Radio()
+    advanced_remote = AdvancedRemoteControl(radio)
+    print("\n--- Testing advanced remote with Radio ---")
+    advanced_remote.toggle_power()
+    advanced_remote.volume_up()
+    advanced_remote.mute()
 
 if __name__ == '__main__':
     main()

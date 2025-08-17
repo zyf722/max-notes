@@ -37,78 +37,108 @@ sidebar_position: 1
 
 ## 代码示例
 
-下面的示例展示了一个门的宽度和高度验证的责任链。如果门的宽度或高度超过了规定的最大值，责任链会拒绝门的请求。
+下面的示例展示了一个使用责任链模式来验证门（`Door` 对象）尺寸的场景。
+
+`Handler` 是一个抽象基类，定义了处理请求的接口和链接下一个处理器的能力。`WidthHandler` 和 `HeightHandler` 是具体的处理器，它们分别检查门的宽度和高度是否超过了设定的最大值。
+
+在客户端代码中，我们将这些处理器链接成一个责任链。当一个 `Door` 对象被传递给链的第一个处理器时，它会依次通过链中的每个处理器进行验证。如果任何一个处理器发现验证失败，它会立即返回一个错误信息，请求处理就此中断。如果所有处理器都验证通过，请求就会成功地穿过整个链。
 
 ```python livecodes console=full
-# [x] Pattern: Chain of Responsiblity
+# [x] Pattern: Chain of Responsibility
 # Provides a chain of processing objects, each of which can decide to either process the request or pass it on to the next handler in the chain
 
 # Why we use it
 # When you want to give more than one object a chance to handle a request
 
-from abc import ABC
+from __future__ import annotations
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict
-
-
-class Handler(ABC):
-    next: "Handler"
-
-    def set_next(self, next_handler: "Handler"):
-        self.next = next_handler
-
-    def handle_request(self, request: Dict[str, Any]):
-        if self.next:
-            self.next.handle_request(request)
+from typing import Optional
 
 
 @dataclass
 class Door:
+    """The request object that needs to be processed."""
     width: int
     height: int
 
+class Handler(ABC):
+    """
+    The Handler interface declares a method for building the chain of handlers
+    and a method for executing a request.
+    """
+    def __init__(self) -> None:
+        self._next_handler: Optional[Handler] = None
+
+    def set_next(self, handler: Handler) -> Handler:
+        """
+        Sets the next handler in the chain. Returns the handler to allow for
+        convenient chaining, e.g., handler1.set_next(handler2).set_next(handler3).
+        """
+        self._next_handler = handler
+        return handler
+
+    @abstractmethod
+    def handle(self, request: Door) -> Optional[str]:
+        """
+        Handles the request. Concrete handlers should implement their logic here.
+        The request can be passed to the next handler in the chain.
+        """
+        if self._next_handler:
+            return self._next_handler.handle(request)
+        return None  # End of chain, request is fully processed.
 
 class WidthHandler(Handler):
-    max_width: int
-
+    """A concrete handler that checks the door's width."""
     def __init__(self, max_width: int):
+        super().__init__()
         self.max_width = max_width
 
-    def handle_request(self, request: Dict[str, Any]):
-        if request["door"].width > self.max_width:
-            print("Door is too wide")
-        else:
-            print("Door width accepted")
-            super().handle_request(request)
-
+    def handle(self, request: Door) -> Optional[str]:
+        if request.width > self.max_width:
+            return f"Validation failed: Door is wider than {self.max_width}."
+        print(f"Width check (max {self.max_width}): OK")
+        return super().handle(request)
 
 class HeightHandler(Handler):
-    max_height: int
-
+    """A concrete handler that checks the door's height."""
     def __init__(self, max_height: int):
+        super().__init__()
         self.max_height = max_height
 
-    def handle_request(self, request: Dict[str, Any]):
-        if request["door"].height > self.max_height:
-            print("Door is too tall")
-        else:
-            print("Door height accepted")
-            super().handle_request(request)
+    def handle(self, request: Door) -> Optional[str]:
+        if request.height > self.max_height:
+            return f"Validation failed: Door is taller than {self.max_height}."
+        print(f"Height check (max {self.max_height}): OK")
+        return super().handle(request)
 
+def client_code(handler: Handler, door: Door) -> None:
+    """The client code that initiates the request."""
+    print(f"\nChecking a door with width={door.width} and height={door.height}...")
+    result = handler.handle(door)
+    if result:
+        print(result)
+    else:
+        print("Validation successful: Door meets all criteria.")
 
-def main():
-    width_handler = WidthHandler(50)
-    height_handler = HeightHandler(100)
-    final_width_handler = WidthHandler(30)
-    final_height_handler = HeightHandler(80)
+def main() -> None:
+    """Main execution function."""
+    # Create the chain of handlers.
+    # The chain is: Width(50) -> Height(100) -> Width(30) -> Height(80)
+    handler_chain = WidthHandler(50)
+    handler_chain.set_next(HeightHandler(100)).set_next(WidthHandler(30)).set_next(HeightHandler(80))
 
-    width_handler.set_next(height_handler)
-    height_handler.set_next(final_width_handler)
-    final_width_handler.set_next(final_height_handler)
+    # Test with a door that should pass all checks.
+    door1 = Door(25, 70)
+    client_code(handler_chain, door1)
 
-    door = Door(40, 90)
-    width_handler.handle_request({"door": door})
-
+    # Test with a door that should fail the second width check.
+    door2 = Door(40, 90)
+    client_code(handler_chain, door2)
+    
+    # Test with a door that should fail the first width check.
+    door3 = Door(60, 90)
+    client_code(handler_chain, door3)
 
 if __name__ == "__main__":
     main()

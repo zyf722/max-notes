@@ -36,72 +36,120 @@ sidebar_position: 6
 
 ## 代码示例
 
-下面通过一个简单的新闻订阅系统展示了观察者模式的实现。在这个示例中，`NewsPress`类代表了发布者，`NewsReader`类代表了订阅者。
+下面通过一个简单的新闻订阅系统展示了观察者模式的实现。
+
+`NewsAgency` 是**发布者**（也叫主题或可观察者），它维护一个订阅者列表，并有一个 `_state` 属性来存储最新的新闻。当 `publish_news` 方法被调用时，它的状态会改变，然后它会调用 `notify` 方法来通知所有已注册的**观察者**。
+
+`Observer` 是一个接口，定义了所有具体观察者必须实现的 `update` 方法。`NewsReader` 是一个具体的观察者，它实现了 `update` 方法，以便在收到发布者的通知时做出反应（在这里是打印新闻）。
+
+客户端代码创建了发布者和多个观察者，并将观察者附加到发布者上。当发布者发布新消息时，所有附加的观察者都会自动收到通知并更新自己的状态，而发布者和观察者之间没有紧密的耦合关系。
 
 ```python livecodes console=full
-# [x] Pattern: Subscriber
-# Subscriber pattern defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically
+# [x] Pattern: Observer
+# Observer pattern defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically
 
 # Why we use it
 # Allows an object to notify multiple objects when its state changes
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, List
+from typing import List
 
-
-@dataclass
-class Publisher(ABC):
-    observers: List["Subscriber"]
-
-    def __init__(self):
-        self.observers = []
-
-    def add_observer(self, observer: "Subscriber"):
-        self.observers.append(observer)
-
-    def remove_observer(self, observer: "Subscriber"):
-        self.observers.remove(observer)
-
-    def notify_observers(self, data: Any):
-        for observer in self.observers:
-            observer.update(data)
-
-
-@dataclass
-class Subscriber(ABC):
+# --- Subject (Publisher) ---
+class Subject(ABC):
+    """
+    The Subject interface declares a set of methods for managing subscribers.
+    """
     @abstractmethod
-    def update(self, data: Any):
+    def attach(self, observer: Observer) -> None:
+        """Attach an observer to the subject."""
         pass
 
+    @abstractmethod
+    def detach(self, observer: Observer) -> None:
+        """Detach an observer from the subject."""
+        pass
 
-@dataclass
-class NewsPress(Publisher):
-    def __init__(self):
-        self.observers = []
+    @abstractmethod
+    def notify(self) -> None:
+        """Notify all observers about an event."""
+        pass
 
+class NewsAgency(Subject):
+    """
+    The Concrete Subject owns some important state and notifies observers when
+    the state changes.
+    """
+    _state: str | None = None
+    _observers: List[Observer] = []
 
-@dataclass
-class NewsReader(Subscriber):
-    name: str
+    def attach(self, observer: Observer) -> None:
+        print("NewsAgency: Attached an observer.")
+        self._observers.append(observer)
 
-    def update(self, data: Any):
-        print(f"{self.name} reads: {data}")
+    def detach(self, observer: Observer) -> None:
+        print("NewsAgency: Detached an observer.")
+        self._observers.remove(observer)
 
+    def notify(self) -> None:
+        """Trigger an update in each subscriber."""
+        print("NewsAgency: Notifying observers...")
+        for observer in self._observers:
+            observer.update(self)
 
-def main():
-    news_press = NewsPress()
+    def publish_news(self, news: str) -> None:
+        """
+        A business logic method that changes the state and notifies observers.
+        """
+        print(f"\nNewsAgency: Publishing news: '{news}'")
+        self._state = news
+        self.notify()
+
+    @property
+    def state(self) -> str | None:
+        return self._state
+
+# --- Observer (Subscriber) ---
+class Observer(ABC):
+    """
+
+    The Observer interface declares the update method, used by subjects.
+    """
+    @abstractmethod
+    def update(self, subject: Subject) -> None:
+        """Receive update from subject."""
+        pass
+
+class NewsReader(Observer):
+    """
+    Concrete Observers react to the updates issued by the Subject they had been
+    attached to.
+    """
+    def __init__(self, name: str):
+        self._name = name
+
+    def update(self, subject: Subject) -> None:
+        if isinstance(subject, NewsAgency) and subject.state is not None:
+            print(f"{self._name} received news: '{subject.state}'")
+
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the Observer pattern."""
+    # The client code.
+    agency = NewsAgency()
+
     reader1 = NewsReader("Alice")
     reader2 = NewsReader("Bob")
-    news_press.add_observer(reader1)
-    news_press.add_observer(reader2)
 
-    news_press.notify_observers("Breaking news: The sun is shining")
+    agency.attach(reader1)
+    agency.attach(reader2)
 
-    news_press.remove_observer(reader1)
+    agency.publish_news("Python 3.12 is out!")
+    agency.publish_news("New design patterns article available.")
 
-    news_press.notify_observers("Breaking news: It's raining")
+    agency.detach(reader1)
 
+    agency.publish_news("Copilot now supports voice commands.")
 
 if __name__ == "__main__":
     main()

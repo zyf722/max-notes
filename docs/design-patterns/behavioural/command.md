@@ -32,7 +32,11 @@ sidebar_position: 2
 
 ## 代码示例
 
-下面的示例展示了一个简单的命令模式的实现。在这个示例中，`Teller`类代表了接收者，`Command`类代表了命令对象，`TellCommand`类代表了具体的命令，`Alarm`类代表了发送者，`Class`类代表了客户端。
+下面的示例展示了一个简单的命令模式的实现。在这个示例中，`Light` 是**接收者**，它知道如何执行具体的操作（开灯和关灯）。`Command` 是命令接口，`TurnOnCommand` 和 `TurnOffCommand` 是具体的命令对象，它们封装了对 `Light` 对象的操作请求。
+
+`RemoteControl` 是**调用者**，它持有一个命令对象，但并不知道这个命令具体会做什么。当 `press_button` 方法被调用时，它只是执行该命令。这种设计将“请求一个操作”和“知道如何执行该操作”这两个关注点解耦了。
+
+此外，这个例子还展示了命令模式的一个常见扩展：通过维护一个命令历史记录来实现撤销（undo）功能。
 
 ```python livecodes console=full
 # [x] Pattern: Command
@@ -41,80 +45,110 @@ sidebar_position: 2
 # Why we use it
 # Decouples sender and receiver while allowing them to be easily extended
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Dict
+from typing import List
 
+# --- Receiver ---
+class Light:
+    """The Receiver class, which knows how to perform the operations."""
+    def turn_on(self) -> None:
+        print("The light is ON")
 
-@dataclass
+    def turn_off(self) -> None:
+        print("The light is OFF")
+
+# --- Command Interface ---
 class Command(ABC):
+    """The Command interface declares a method for executing a command."""
     @abstractmethod
-    def execute(self):
+    def execute(self) -> None:
         pass
 
+    @abstractmethod
+    def undo(self) -> None:
+        """A method to undo the command, useful for history/rollback features."""
+        pass
 
-@dataclass
-class Teller:
-    name: str
+# --- Concrete Commands ---
+class TurnOnCommand(Command):
+    """A Concrete Command to turn on the light."""
+    def __init__(self, light: Light):
+        self._light = light
 
-    def say(self, message: str):
-        print(f"{self.name} says: {message}")
+    def execute(self) -> None:
+        self._light.turn_on()
 
+    def undo(self) -> None:
+        self._light.turn_off()
 
-@dataclass
-class TellCommand(Command):
-    sender: Teller
-    message: str
+class TurnOffCommand(Command):
+    """A Concrete Command to turn off the light."""
+    def __init__(self, light: Light):
+        self._light = light
 
-    def execute(self):
-        self.sender.say(self.message)
+    def execute(self) -> None:
+        self._light.turn_off()
 
+    def undo(self) -> None:
+        self._light.turn_on()
 
-class Alarm:
-    command: Command
+# --- Invoker ---
+class RemoteControl:
+    """
+    The Invoker is associated with one or several commands. It sends a request
+    to the command.
+    """
+    def __init__(self) -> None:
+        self._command: Command | None = None
+        self._history: List[Command] = []
 
-    def set_command(self, command: Command):
-        self.command = command
+    def set_command(self, command: Command) -> None:
+        self._command = command
 
-    def trigger(self):
-        self.command.execute()
+    def press_button(self) -> None:
+        if self._command:
+            self._command.execute()
+            self._history.append(self._command)
 
-
-class Class:
-    name: str
-    students: Dict[str, Alarm]
-
-    def __init__(self, name: str):
-        self.name = name
-        self.students = {}
-
-    def add_student(self, student: str, alarm: Alarm):
-        if student not in self.students:
-            self.students[student] = alarm
+    def press_undo(self) -> None:
+        if self._history:
+            last_command = self._history.pop()
+            print("Undoing the last action...")
+            last_command.undo()
         else:
-            print(f"Student {student} already exists in the class")
+            print("Nothing to undo.")
 
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the Command pattern."""
+    # Create receiver, commands, and invoker
+    light = Light()
+    turn_on = TurnOnCommand(light)
+    turn_off = TurnOffCommand(light)
+    remote = RemoteControl()
 
-def main():
-    student1 = Teller("Student 1")
-    student2 = Teller("Student 2")
+    # Turn the light on
+    remote.set_command(turn_on)
+    print("Pressing button to turn light on:")
+    remote.press_button()
 
-    tell_command1 = TellCommand(student1, "Hello, dear teacher")
-    tell_command2 = TellCommand(student2, "Hey, teacher")
+    # Turn the light off
+    remote.set_command(turn_off)
+    print("\nPressing button to turn light off:")
+    remote.press_button()
 
-    alarm1 = Alarm()
-    alarm2 = Alarm()
+    # Undo the last action (turn off), which should turn the light back on
+    print("\nPressing undo button:")
+    remote.press_undo()
 
-    alarm1.set_command(tell_command1)
-    alarm2.set_command(tell_command2)
-
-    class1 = Class("Class 1")
-    class1.add_student("Student 1", alarm1)
-    class1.add_student("Student 2", alarm2)
-
-    for _, alarm in class1.students.items():
-        alarm.trigger()
-
+    # Undo again (turn on), which should turn the light off
+    print("\nPressing undo button again:")
+    remote.press_undo()
+    
+    # Try to undo with no history
+    print("\nPressing undo button one more time:")
+    remote.press_undo()
 
 if __name__ == "__main__":
     main()

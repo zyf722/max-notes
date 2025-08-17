@@ -30,7 +30,13 @@ sidebar_position: 4
 
 ## 代码示例
 
-下面以一个现实街区的例子展示了一个简单的中介者模式的实现。在这个示例中，`Resident`类代表了街区的居民（组件），`StreetOffice`类代表了街区办公室（中介者），`CallEvent`和`TransferEvent`类代表了居民之间的通信事件。
+下面以一个智能家居系统为例，展示了中介者模式的实现。
+
+在这个系统中，`Light`（灯）、`Thermostat`（恒温器）和 `CoffeeMachine`（咖啡机）是**组件**。它们之间不直接通信，而是通过一个**中介者** `SmartHomeMediator` 来协调。
+
+每个组件都持有一个对中介者的引用。当一个组件的状态发生变化时（例如，灯被打开），它会通过调用 `notify` 方法来通知中-介者。中介者接收到通知后，会根据预设的逻辑来协调其他组件（例如，当中介者收到 `light_on` 事件时，它会指示恒温器调节温度，并触发咖啡机开始煮咖啡）。
+
+这种设计避免了组件之间复杂的网状依赖关系，使得添加新组件或修改组件间的交互逻辑变得更加容易，因为所有的协调逻辑都集中在中介者中。
 
 ```python livecodes console=full
 # [x] Pattern: Mediator
@@ -39,84 +45,111 @@ sidebar_position: 4
 # Why we use it
 # Decouples the components from each other, making them easier to maintain and reuse
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Dict
 
-
-@dataclass
-class Event(ABC):
-    pass
-
-
-@dataclass
-class CallEvent(Event):
-    message: str
-
-
-@dataclass
-class TransferEvent(Event):
-    amount: int
-    target_name: str
-
-
-@dataclass
+# --- Mediator Interface ---
 class Mediator(ABC):
+    """
+    The Mediator interface declares a method used by components to notify the
+    mediator about various events. The Mediator may react to these events and
+    pass the execution to other components.
+    """
     @abstractmethod
-    def notify(self, sender: str, event: Event):
+    def notify(self, sender: Component, event: str) -> None:
         pass
 
+# --- Base Component ---
+class Component:
+    """
+    The Base Component provides the basic functionality of storing a mediator's
+    instance inside component objects.
+    """
+    def __init__(self, mediator: Mediator | None = None) -> None:
+        self._mediator = mediator
 
-@dataclass
-class Resident:
-    name: str
-    balance: int
-    mediator: Mediator
+    @property
+    def mediator(self) -> Mediator:
+        if not self._mediator:
+            raise ValueError("Mediator not set for this component.")
+        return self._mediator
 
-    def call(self, message: str):
-        self.mediator.notify(self.name, CallEvent(message))
+    @mediator.setter
+    def mediator(self, mediator: Mediator) -> None:
+        self._mediator = mediator
 
-    def transfer(self, amount: int, resident_name: str):
-        self.mediator.notify(self.name, TransferEvent(amount, resident_name))
+# --- Concrete Components ---
+class Light(Component):
+    """Concrete Component for a light."""
+    def turn_on(self) -> None:
+        print("Light is turning on.")
+        self.mediator.notify(self, "light_on")
 
+    def turn_off(self) -> None:
+        print("Light is turning off.")
+        self.mediator.notify(self, "light_off")
 
-@dataclass
-class StreetOffice(Mediator):
-    residents: Dict[str, Resident]
+class Thermostat(Component):
+    """Concrete Component for a thermostat."""
+    def __init__(self, mediator: Mediator | None = None, temperature: float = 20.0):
+        super().__init__(mediator)
+        self._temperature = temperature
 
-    def __init__(self):
-        self.residents = {}
+    @property
+    def temperature(self) -> float:
+        return self._temperature
 
-    def register_resident(self, resident: Resident):
-        if resident.name in self.residents:
-            raise ValueError(f"Resident {resident.name} already exists")
+    def set_temperature(self, temp: float) -> None:
+        print(f"Thermostat setting temperature to {temp}°C.")
+        self._temperature = temp
+        self.mediator.notify(self, "temp_changed")
 
-        if resident.mediator is not self:
-            raise ValueError("Resident's mediator is not the same as the street office")
+class CoffeeMachine(Component):
+    """Concrete Component for a coffee machine."""
+    def brew(self) -> None:
+        print("Coffee machine is brewing coffee.")
+        self.mediator.notify(self, "coffee_brewed")
 
-        self.residents[resident.name] = resident
+# --- Concrete Mediator ---
+class SmartHomeMediator(Mediator):
+    """
+    The Concrete Mediator implements cooperative behavior by coordinating
+    concrete component objects.
+    """
+    def __init__(self, light: Light, thermostat: Thermostat, coffee_machine: CoffeeMachine):
+        self._light = light
+        self._light.mediator = self
+        self._thermostat = thermostat
+        self._thermostat.mediator = self
+        self._coffee_machine = coffee_machine
+        self._coffee_machine.mediator = self
 
-    def notify(self, sender: str, event: Event):
-        if isinstance(event, CallEvent):
-            print(f"{sender} calls: {event.message}")
-        elif isinstance(event, TransferEvent):
-            print(f"{sender} transfers {event.amount} to {event.target_name}")
-            self.residents[sender].balance -= event.amount
-            self.residents[event.target_name].balance += event.amount
+    def notify(self, sender: Component, event: str) -> None:
+        print(f"Mediator received event '{event}' from {sender.__class__.__name__}")
+        if event == "light_on":
+            print("Mediator reacts to light_on: setting thermostat to a comfortable morning temperature.")
+            self._thermostat.set_temperature(22.0)
+        elif event == "temp_changed":
+            if self._thermostat.temperature > 21:
+                print("Mediator reacts to temp_changed: It's warm, let's brew some coffee.")
+                self._coffee_machine.brew()
+        elif event == "coffee_brewed":
+            print("Mediator reacts to coffee_brewed: Coffee is ready, turning off the light as we leave the kitchen.")
+            self._light.turn_off()
 
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the Mediator pattern."""
+    light = Light()
+    thermostat = Thermostat()
+    coffee_machine = CoffeeMachine()
 
-def main():
-    street_office = StreetOffice()
-    alice = Resident("Alice", 100, street_office)
-    bob = Resident("Bob", 50, street_office)
-    street_office.register_resident(alice)
-    street_office.register_resident(bob)
+    mediator = SmartHomeMediator(light, thermostat, coffee_machine)
 
-    alice.call("Hello, Bob")
-    alice.transfer(20, "Bob")
-    print(f"Alice's balance: {alice.balance}")
-    print(f"Bob's balance: {bob.balance}")
-
+    print("--- Morning Routine Simulation ---")
+    print("Turning on the light to start the day...")
+    light.turn_on()
 
 if __name__ == "__main__":
     main()

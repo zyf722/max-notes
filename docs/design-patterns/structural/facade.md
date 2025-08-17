@@ -26,7 +26,7 @@ sidebar_position: 5
 
 ## 代码示例
 
-下面的代码示例展示了一个使用外观模式的 Python 示例，其中 `Fitter` 和 `Installer` 作为不同功能的子系统，但用户不需要知道这两个类之间是如何协调的，而只关心门最后能被安装，因此 `BuildingTeam` 作为外观类，将 `Fitter` 和 `Installer` 封装在一起，提供了一个简单的接口 `build`。
+下面的代码示例展示了一个使用外观模式的 Python 示例。`ConversionFacade` 类为复杂的视频处理子系统（包括 `VideoConverter`、`AudioExtractor` 和 `SubtitleManager`）提供了一个简单的接口。客户端代码只需要调用 `ConversionFacade` 的 `process_video` 方法，而无需了解底层各个组件的复杂交互，从而实现了客户端与复杂子系统的解耦。
 
 ```python livecodes console=full
 # [x] Pattern: Facade
@@ -35,51 +35,67 @@ sidebar_position: 5
 # Why we use it
 # When we want to provide a simple interface to a complex system
 
-from dataclasses import dataclass
+# --- Complex Subsystem Parts ---
+class VideoConverter:
+    """A complex part of the video conversion subsystem."""
+    def convert(self, filename: str, format: str) -> str:
+        print(f"Converting video '{filename}' to {format}...")
+        # Simulate conversion
+        converted_filename = f"{filename.split('.')[0]}.{format}"
+        print(f"Conversion complete: '{converted_filename}'")
+        return converted_filename
 
+class AudioExtractor:
+    """Another complex part for extracting audio."""
+    def extract(self, filename: str) -> str:
+        print(f"Extracting audio from '{filename}'...")
+        # Simulate audio extraction
+        audio_filename = f"{filename.split('.')[0]}.mp3"
+        print(f"Audio extracted: '{audio_filename}'")
+        return audio_filename
 
-@dataclass
-class Door:
-    width: int
-    height: int
+class SubtitleManager:
+    """A part for managing subtitles."""
+    def add_subtitles(self, video_file: str, subtitle_file: str) -> None:
+        print(f"Adding subtitles from '{subtitle_file}' to '{video_file}'...")
+        # Simulate adding subtitles
+        print("Subtitles added successfully.")
 
-    def area(self) -> int:
-        return self.width * self.height
+# --- Facade ---
+class ConversionFacade:
+    """
+    The Facade class provides a simple interface to the complex logic of one or
+    several subsystems. The Facade delegates the client requests to the
+    appropriate objects within the subsystem. The Facade is also responsible for
+    managing their lifecycle.
+    """
+    def __init__(self) -> None:
+        self._video_converter = VideoConverter()
+        self._audio_extractor = AudioExtractor()
+        self._subtitle_manager = SubtitleManager()
 
+    def process_video(self, filename: str, target_format: str, subtitle_file: str | None = None) -> None:
+        """
+        The Facade's methods are convenient shortcuts to the sophisticated
+        functionality of the subsystems.
+        """
+        print("--- Starting video processing ---")
+        converted_video = self._video_converter.convert(filename, target_format)
+        self._audio_extractor.extract(converted_video)
+        if subtitle_file:
+            self._subtitle_manager.add_subtitles(converted_video, subtitle_file)
+        print("--- Video processing finished ---")
 
-@dataclass
-class Fitter:
-    door: Door
-
-    def fit(self) -> None:
-        print(f"Fitting door of area {self.door.area()}")
-
-
-@dataclass
-class Installer:
-    door: Door
-
-    def install(self) -> None:
-        print(f"Installing door of area {self.door.area()}")
-
-
-@dataclass
-class BuildingTeam:
-    fitter: Fitter
-    installer: Installer
-
-    def build(self) -> None:
-        self.fitter.fit()
-        self.installer.install()
-
-
-def main():
-    door = Door(100, 200)
-    fitter = Fitter(door)
-    installer = Installer(door)
-    building_team = BuildingTeam(fitter, installer)
-    building_team.build()
-
+# --- Client Code ---
+def main() -> None:
+    """
+    The client code works with complex subsystems through a simple interface
+    provided by the Facade. When a facade manages the lifecycle of the
+    subsystem, the client might not even know about the existence of the
+    subsystem's classes.
+    """
+    facade = ConversionFacade()
+    facade.process_video("my_vacation.mov", "mp4", "subtitles.srt")
 
 if __name__ == "__main__":
     main()

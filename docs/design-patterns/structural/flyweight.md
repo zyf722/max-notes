@@ -38,7 +38,11 @@ sidebar_position: 6
 
 ## 代码示例
 
-下面的代码示例展示了一个使用享元模式的 Python 示例，其中 `DoorSpec` 作为享元对象，`DoorSpecFactory` 作为享元工厂，`Door` 作为享元对象的上下文。`assert` 语句用于验证享元对象是否被正确共享。
+下面的代码示例展示了一个使用享元模式的 Python 示例。在这个例子中，我们要在森林里画很多树。每棵树都有一些**内部状态**（`name`, `color`, `texture`，这些是可以共享的）和**外部状态**（`x`, `y` 坐标，每棵树都不同）。
+
+`TreeType` 类是享元对象，它存储了树的内部状态。`TreeFactory` 是享元工厂，它确保具有相同内部状态的 `TreeType` 对象只被创建一次并被共享。`Tree` 类是上下文对象，它包含了外部状态（坐标）以及对一个 `TreeType` 享元对象的引用。
+
+客户端代码（`Forest`）通过工厂获取享元对象来创建树，从而大大减少了内存占用，因为许多树可以共享同一个 `TreeType` 对象。
 
 ```python livecodes console=full
 # [x] Pattern: Flyweight
@@ -47,43 +51,92 @@ sidebar_position: 6
 # Why we use it
 # When we want to share common state between multiple objects
 
-from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
+# --- Flyweight ---
+class TreeType:
+    """
+    The Flyweight stores a common portion of the state (intrinsic state) that
+    belongs to multiple real business entities. The Flyweight accepts the rest of
+    the state (extrinsic state, unique for each entity) via its method's
+    parameters.
+    """
+    def __init__(self, name: str, color: str, texture: str):
+        self._name = name
+        self._color = color
+        self._texture = texture
 
-@dataclass
-class DoorSpec:
-    width: int
-    height: int
+    def draw(self, canvas: List[str], x: int, y: int) -> None:
+        print(f"Drawing a '{self._name}' tree with color '{self._color}' at ({x}, {y})")
+        # In a real app, this would draw on a canvas object.
+        # For this example, we'll just print.
 
+# --- Flyweight Factory ---
+class TreeFactory:
+    """
+    The Flyweight Factory creates and manages the Flyweight objects. It ensures
+    that flyweights are shared correctly. When the client requests a flyweight,
+    the factory either returns an existing instance or creates a new one, if it
+    doesn't exist yet.
+    """
+    _tree_types: Dict[str, TreeType] = {}
 
-class DoorSpecFactory:
-    def __init__(self):
-        self._door_specs = {}
+    @staticmethod
+    def get_tree_type(name: str, color: str, texture: str) -> TreeType:
+        key = f"{name}_{color}_{texture}"
+        if key not in TreeFactory._tree_types:
+            print(f"TreeFactory: Can't find a flyweight for key '{key}', creating new one.")
+            TreeFactory._tree_types[key] = TreeType(name, color, texture)
+        else:
+            print(f"TreeFactory: Reusing existing flyweight for key '{key}'.")
+        return TreeFactory._tree_types[key]
 
-    def get_door_spec(self, width: int, height: int) -> DoorSpec:
-        key = (width, height)
-        if key not in self._door_specs:
-            self._door_specs[key] = DoorSpec(width, height)
-        return self._door_specs[key]
+# --- Context ---
+class Tree:
+    """
+    The Context class contains the extrinsic state, unique across all original
+    objects. When a context is paired with one of the Flyweight objects, it
+    represents the full state of the original object.
+    """
+    def __init__(self, x: int, y: int, type: TreeType):
+        self._x = x
+        self._y = y
+        self._type = type
 
+    def draw(self, canvas: List[str]) -> None:
+        self._type.draw(canvas, self._x, self._y)
 
-@dataclass
-class Door:
-    id: int
-    spec: DoorSpec
+# --- Client Code ---
+class Forest:
+    """
+    The client code usually creates a bunch of pre-populated flyweights in the
+    initialization stage of the application.
+    """
+    def __init__(self) -> None:
+        self._trees: List[Tree] = []
 
-    def area(self) -> int:
-        return self.width * self.height
+    def plant_tree(self, x: int, y: int, name: str, color: str, texture: str) -> None:
+        tree_type = TreeFactory.get_tree_type(name, color, texture)
+        tree = Tree(x, y, tree_type)
+        self._trees.append(tree)
 
+    def draw(self, canvas: List[str]) -> None:
+        for tree in self._trees:
+            tree.draw(canvas)
 
-def main():
-    door_spec_factory = DoorSpecFactory()
-    door1 = Door(1, door_spec_factory.get_door_spec(100, 200))
-    door2 = Door(2, door_spec_factory.get_door_spec(100, 200))
-    door3 = Door(3, door_spec_factory.get_door_spec(200, 300))
-    assert door1.spec is door2.spec
-    assert door2.spec is not door3.spec
-
+def main() -> None:
+    """Main execution function."""
+    forest = Forest()
+    
+    print("Planting some trees...")
+    forest.plant_tree(10, 20, "Oak", "Green", "Rough")
+    forest.plant_tree(30, 50, "Pine", "Dark Green", "Needles")
+    forest.plant_tree(60, 80, "Oak", "Green", "Rough") # This should reuse the flyweight
+    forest.plant_tree(90, 10, "Birch", "White", "Smooth")
+    
+    print("\nDrawing the forest:")
+    canvas: List[str] = [] # A mock canvas
+    forest.draw(canvas)
 
 if __name__ == "__main__":
     main()

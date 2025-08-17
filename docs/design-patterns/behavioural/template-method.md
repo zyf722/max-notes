@@ -39,7 +39,15 @@ sidebar_position: 9
 
 ## 代码示例
 
-下面的示例以做作业为例展示了模板方法模式的实现。在这个示例中，`Homework`类代表了作业，`MathHomework`和`PEHomework`类代表了具体的作业。具体的作业类通过重写父类的方法来实现自己的逻辑。
+下面的示例以数据处理为例，展示了模板方法模式的实现。
+
+`DataProcessor` 是一个抽象基类，它定义了一个名为 `process_data` 的**模板方法**。这个方法定义了数据处理算法的骨架（读取 -> 分析 ->呈现），它调用了一系列其他方法来完成这些步骤。
+
+其中，`read_data` 和 `analyze_data` 是**抽象方法**，它们没有默认实现，必须由子类来提供具体的实现。`present_results` 是一个**钩子（hook）**，它有一个默认的实现，但子类可以选择性地覆盖它以提供不同的行为。
+
+`TextFileProcessor` 和 `CSVFileProcessor` 是具体的子类。它们继承自 `DataProcessor` 并为抽象步骤提供了具体的实现。例如，`TextFileProcessor` 从文本文件读取和分析数据，而 `CSVFileProcessor` 则处理 CSV 文件，并覆盖了 `present_results` 钩子以提供特定的图表展示。
+
+客户端代码通过调用 `process_data` 这个模板方法来启动整个流程，而无需关心具体的处理步骤是如何实现的。这使得算法的结构保持不变，同时允许子类灵活地定义算法的某些特定步骤。
 
 ```python livecodes console=full
 # [x] Pattern: Template Method
@@ -48,57 +56,77 @@ sidebar_position: 9
 # Why we use it
 # Allows subclasses to redefine certain steps of an algorithm without changing the algorithm's structure
 
-from abc import ABC
-from dataclasses import dataclass
-from typing import List
+from abc import ABC, abstractmethod
 
+# --- Abstract Class (Template) ---
+class DataProcessor(ABC):
+    """
+    The Abstract Class defines a template method that contains a skeleton of
+    some algorithm, composed of calls to (usually) abstract primitive
+    operations.
+    """
+    def process_data(self) -> None:
+        """
+        The template method defines the skeleton of an algorithm.
+        """
+        self.read_data()
+        self.analyze_data()
+        self.present_results()
 
-@dataclass
-class Homework(ABC):
-    name: str
-    questions: List[str]
+    # These operations have to be implemented in subclasses.
+    @abstractmethod
+    def read_data(self) -> None:
+        pass
 
-    def write_down_name(self):
-        print(f"Name: {self.name}")
+    @abstractmethod
+    def analyze_data(self) -> None:
+        pass
 
-    def answer(self, verb: str = "Answering"):
-        for question in self.questions:
-            print(f"{verb} {question}")
+    # This is a "hook." Subclasses may override them, but it's not mandatory
+    # since the hook already has default (but empty) implementation.
+    def present_results(self) -> None:
+        print("Presenting results in a standard format.")
 
-    def finish(self):
-        print("Homework is finished")
+# --- Concrete Classes ---
+class TextFileProcessor(DataProcessor):
+    """
+    Concrete classes have to implement all abstract operations of the base
+    class. They can also override some operations with a default implementation.
+    """
+    def read_data(self) -> None:
+        print("Reading data from a text file.")
 
-    def do_homework(self):
-        self.write_down_name()
-        self.answer()
-        self.finish()
+    def analyze_data(self) -> None:
+        print("Analyzing text data.")
 
+class CSVFileProcessor(DataProcessor):
+    """Another concrete class for processing CSV files."""
+    def read_data(self) -> None:
+        print("Reading data from a CSV file.")
 
-@dataclass
-class MathHomework(Homework):
-    def answer(self):
-        print("Solving math")
-        super().answer("Solving")
+    def analyze_data(self) -> None:
+        print("Analyzing CSV data.")
 
+    def present_results(self) -> None:
+        """Overrides the hook to provide a specific presentation format."""
+        print("Presenting results in a CSV-specific chart.")
 
-@dataclass
-class PEHomework(Homework):
-    def answer(self):
-        super().answer("Doing")
+# --- Client Code ---
+def client_code(processor: DataProcessor) -> None:
+    """
+    The client code calls the template method to execute the algorithm. Client
+    code does not have to know the concrete class of an object it works with,
+    as long as it works with objects through the interface of their base class.
+    """
+    processor.process_data()
 
-    def finish(self):
-        print("Drinking water after exercise")
-        super().finish()
-
-
-def main():
-    NAME = "Bob"
-    math_homework = MathHomework(NAME, ["1+1", "2+2"])
-    pe_homework = PEHomework(NAME, ["Running", "Jumping"])
-
-    math_homework.do_homework()
-    pe_homework.do_homework()
-
+def main() -> None:
+    """Main execution function."""
+    print("Same client code can work with different subclasses:")
+    client_code(TextFileProcessor())
+    print("-" * 20)
+    print("Same client code can work with different subclasses:")
+    client_code(CSVFileProcessor())
 
 if __name__ == "__main__":
     main()

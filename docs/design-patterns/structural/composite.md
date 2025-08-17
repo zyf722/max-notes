@@ -40,7 +40,7 @@ sidebar_position: 3
 
 ## 代码示例
 
-下面是一个使用组合模式的 Python 示例，其中有一个 `FileObject` 抽象类，`File` 和 `Directory` 类分别实现了该抽象类。`FileSizeCalculator` 类接受一个 `FileObject` 对象，计算其大小。
+下面的代码示例展示了组合模式的实现。`Graphic` 是一个组件接口，定义了简单对象（叶节点）和复杂对象（容器）的通用操作。`Dot` 是一个叶节点类，代表一个简单的图形。`CompositeGraphic` 是一个容器类，可以包含其他 `Graphic` 对象（包括 `Dot` 和其他 `CompositeGraphic`）。客户端代码可以通过 `Graphic` 接口统一处理这些对象，而无需关心它们是简单对象还是组合对象。
 
 ```python livecodes console=full
 # [x] Pattern: Composite
@@ -50,54 +50,88 @@ sidebar_position: 3
 # Sometimes some interface might return a single object or a group of objects
 # We want to not care about if it is an object or a container of objects
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import List
 
-
-
-@dataclass
-class FileObject(ABC):
-    name: str
-    
-    @property
+# --- Component Interface ---
+class Graphic(ABC):
+    """
+    The base Component class declares common operations for both simple and
+    complex objects of a composition.
+    """
     @abstractmethod
-    def size(self):
+    def render(self) -> str:
+        """
+        The base Component may implement some default behavior or leave it to
+        concrete classes.
+        """
         pass
 
+    def add(self, graphic: Graphic) -> None:
+        """
+        A component can add or remove other components from its list of children.
+        """
+        raise NotImplementedError("This method is not supported by this component.")
 
-@dataclass
-class File(FileObject):
-    _size: int
-    
-    @property
-    def size(self):
-        return self._size
+    def remove(self, graphic: Graphic) -> None:
+        raise NotImplementedError("This method is not supported by this component.")
 
-@dataclass
-class Directory(FileObject):
-    files: List[FileObject]
+# --- Leaf ---
+class Dot(Graphic):
+    """
+    The Leaf class represents the end objects of a composition. A leaf can't
+    have any children.
+    """
+    def __init__(self, x: int, y: int):
+        self._x = x
+        self._y = y
 
-    @property
-    def size(self):
-        return sum([f.size for f in self.files])
+    def render(self) -> str:
+        return f"Dot at ({self._x}, {self._y})"
 
-@dataclass
-class FileSizeCalculator:
-    file: FileObject
+# --- Composite ---
+class CompositeGraphic(Graphic):
+    """
+    The Composite class represents the complex components that may have
+    children. Usually, the Composite objects delegate the actual work to their
+    children and then "sum-up" the result.
+    """
+    def __init__(self) -> None:
+        self._children: List[Graphic] = []
 
-    def calculate(self) -> int:
-        return self.file.size
+    def add(self, graphic: Graphic) -> None:
+        self._children.append(graphic)
 
-def main():
-    file1 = File("file1", 100)
-    file2 = File("file2", 200)
-    file3 = File("file3", 300)
+    def remove(self, graphic: Graphic) -> None:
+        self._children.remove(graphic)
 
-    directory = Directory("directory", [file1, file2, file3])
+    def render(self) -> str:
+        results = []
+        for child in self._children:
+            results.append(child.render())
+        return f"Composite([\n  " + ",\n  ".join(results) + "\n])"
 
-    file_size_calculator = FileSizeCalculator(directory)
-    print(file_size_calculator.calculate())
+# --- Client Code ---
+def main() -> None:
+    """
+    The client code works with all of the components via the base interface.
+    """
+    # Create a complex graphic composed of other graphics
+    all_graphics = CompositeGraphic()
+    all_graphics.add(Dot(1, 2))
+    all_graphics.add(Dot(3, 4))
+
+    # Create another composite graphic
+    group = CompositeGraphic()
+    group.add(Dot(5, 6))
+    group.add(Dot(7, 8))
+
+    # Add the second group to the first one
+    all_graphics.add(group)
+
+    print("Rendering the entire graphic structure:")
+    print(all_graphics.render())
 
 if __name__ == '__main__':
     main()

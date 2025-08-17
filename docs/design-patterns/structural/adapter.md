@@ -40,9 +40,9 @@ sidebar_position: 1
 
 ## 代码示例
 
-下面是一个使用适配器模式的示例代码，其中有一个 `Door` 接口、一个实现了该接口的 `IronDoor` 类、一个 `Window` 类、以及一个通过**组合**将 `Window` 类适配为 `Door` 接口的 `WindowAdapter` 类。
+下面的代码示例中，`RoundHole` 类（客户端）希望使用 `RoundPeg` 接口的对象。但现在我们有一个 `SquarePeg` 类（适配者），它的接口与 `RoundPeg` 不兼容。
 
-通过适配器模式，我们可以将 `Window` 类的接口转换为 `Door` 接口，使得 `Fitter` 类可以使用 `Window` 类的实例。
+为了让 `SquarePeg` 能够适配 `RoundHole`，我们创建了一个 `SquarePegAdapter`。这个适配器包装了 `SquarePeg` 对象，并实现了 `RoundPeg` 接口，使得客户端代码（`RoundHole`）可以透明地使用它。
 
 ```python livecodes console=full
 # [x] Pattern: Adapter
@@ -53,68 +53,74 @@ sidebar_position: 1
 # We use adapter to wrap the existing class and provide the interface we need
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
-
-@dataclass
-class Door(ABC):
-    width: int
-    height: int
-
-    def area(self):
-        return self.width * self.height
-    
+# --- Target Interface ---
+class RoundPeg(ABC):
+    """The Target interface, which the client code expects."""
     @abstractmethod
-    def _cut_material(self):
-        raise NotImplementedError
-    
-@dataclass
-class Window:
-    width: int
-    height: int
+    def get_radius(self) -> float:
+        pass
 
-    def area(self):
-        return self.width * self.height
-    
-    def _install_components(self):
-        print('Installing window components')
+# --- Concrete Target ---
+class RoundHole:
+    """The client class that works with objects that implement the Target interface."""
+    def __init__(self, radius: float):
+        self._radius = radius
 
-class WindowAdapter(Door):
-    def __init__(self, window: Window):
-        self.window = window
+    def get_radius(self) -> float:
+        return self._radius
 
-    def area(self):
-        return self.window.area()
+    def fits(self, peg: RoundPeg) -> bool:
+        """Checks if a round peg fits into this round hole."""
+        return self.get_radius() >= peg.get_radius()
 
-    def _cut_material(self):
-        self.window._install_components()
+# --- Adaptee ---
+class SquarePeg:
+    """The Adaptee contains some useful behavior, but its interface is incompatible
+    with the existing client code. The Adaptee needs some adaptation before the
+    client code can use it."""
+    def __init__(self, width: float):
+        self._width = width
 
-@dataclass
-class IronDoor(Door):
-    def _cut_material(self):
-        print('Cutting iron sheets')
+    def get_width(self) -> float:
+        return self._width
 
-@dataclass
-class Fitter:
-    name: str
+# --- Adapter ---
+class SquarePegAdapter(RoundPeg):
+    """
+    The Adapter makes the Adaptee's interface compatible with the Target's
+    interface via composition.
+    """
+    def __init__(self, peg: SquarePeg):
+        self._peg = peg
 
-    def hello(self):
-        print(f"Hello, I'm {self.name}")
-    
-    def fit(self, door: Door):
-        print(f"Fitting door with area {door.area()}")
-        door._cut_material()
+    def get_radius(self) -> float:
+        """
+        The Adapter calculates a radius that would allow the square peg to fit
+        into a round hole. The calculation is based on the diagonal of the square.
+        """
+        return self._peg.get_width() * (2**0.5) / 2
 
-def main():
-    iron_door = IronDoor(100, 200)
-    fitter = Fitter('John')
-    fitter.hello()
-    fitter.fit(iron_door)
+# --- Client Code ---
+def main() -> None:
+    """Client code demonstrating the Adapter pattern."""
+    # Create a round hole and a round peg.
+    hole = RoundHole(5)
+    rpeg = type('RoundPegImpl', (RoundPeg,), {'get_radius': lambda self: 5.0})()
 
-    window = Window(50, 100)
-    window_adapter = WindowAdapter(window)
-    fitter.fit(window_adapter)
-    
+    print(f"Round peg with radius {rpeg.get_radius()} fits into round hole with radius {hole.get_radius()}: {hole.fits(rpeg)}")
+
+    # Create a square peg.
+    small_sqpeg = SquarePeg(2)
+    large_sqpeg = SquarePeg(20)
+    # hole.fits(small_sqpeg)  # This would be a compile-time error in a statically typed language.
+
+    # Adapt the square pegs to fit into the round hole.
+    small_sqpeg_adapter = SquarePegAdapter(small_sqpeg)
+    large_sqpeg_adapter = SquarePegAdapter(large_sqpeg)
+
+    print(f"Small square peg with width {small_sqpeg.get_width()} fits into round hole with radius {hole.get_radius()}: {hole.fits(small_sqpeg_adapter)}")
+    print(f"Large square peg with width {large_sqpeg.get_width()} fits into round hole with radius {hole.get_radius()}: {hole.fits(large_sqpeg_adapter)}")
 
 if __name__ == '__main__':
     main()

@@ -42,7 +42,13 @@ sidebar_position: 4
 - 克隆包含**循环引用**的复杂对象可能会非常麻烦
 
 ## 代码示例
-以下代码展示了一个简单的原型模式解释。要注意的是，以下代码严格来说并不是原型模式的实现，而是通过 Python 的 `copy` 模块实现了对象的深拷贝。
+以下代码展示了一个原型模式的实现。`Prototype` 是一个接口，定义了 `clone` 方法。`Door` 是一个具体原型类，它实现了 `clone` 方法来创建自身的副本。
+
+这个例子特别强调了**浅拷贝**和**深拷贝**的区别：
+- **浅拷贝** (`copy.copy`)：只复制对象本身，而不复制其内部的嵌套对象。因此，当修改克隆对象中嵌套对象（`Address`）的属性时，原始对象中的嵌套对象也会被修改，因为它们共享同一个 `Address` 实例。
+- **深拷贝** (`copy.deepcopy`)：会递归地复制对象及其所有嵌套对象。因此，修改克隆对象的嵌套对象不会影响原始对象。
+
+客户端代码通过调用 `clone` 方法来获取 `Door` 对象的副本，而无需关心其具体的创建过程。这使得创建新对象变得高效，特别是当对象初始化过程很复杂时。
 
 ```python livecodes console=full
 # [x] Pattern: Prototype
@@ -51,24 +57,74 @@ sidebar_position: 4
 # Why we use it
 # When you want to avoid the overhead of creating a new object in the standard way (e.g., using the new keyword), and you want to create a new object based on an existing object
 
-from copy import deepcopy
+from __future__ import annotations
+import copy
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+class Prototype(ABC):
+    """The Prototype interface."""
+    @abstractmethod
+    def clone(self) -> Prototype:
+        """Creates a clone of the object."""
+        pass
 
 @dataclass
-class Door:
+class Address:
+    """A simple class to be nested."""
+    street: str
+    city: str
+
+@dataclass
+class Door(Prototype):
+    """The Concrete Prototype."""
     width: int
     height: int
+    # Contains a nested object to demonstrate deep vs. shallow copy.
+    address: Address
 
+    def clone(self, deep: bool = False) -> Door:
+        """
+        Creates a clone of the Door object.
+        :param deep: If True, performs a deep copy. Otherwise, a shallow copy.
+        """
+        if deep:
+            return copy.deepcopy(self)
+        return copy.copy(self)
+    
+    def __str__(self) -> str:
+        return f"Door(width={self.width}, height={self.height}, address=Address(street='{self.address.street}', city='{self.address.city}'))"
 
-def main():
-    door =  Door(100, 200)
-    print(door)
-    door2 = deepcopy(door)
-    print(door2)
-    door2.width = 300
-    print(door2)
-    print(door)
+def main() -> None:
+    """Client code."""
+    print("Creating an original door object.")
+    original_address = Address("123 Main St", "Anytown")
+    original_door = Door(width=100, height=200, address=original_address)
+    print(f"Original door: {original_door}")
+
+    print("\nCloning the door using a shallow copy.")
+    cloned_door_shallow = original_door.clone(deep=False)
+    print(f"Shallow cloned door: {cloned_door_shallow}")
+
+    print("\nModifying the address of the shallow cloned door.")
+    cloned_door_shallow.address.street = "456 Oak Ave"
+    print(f"Shallow cloned door after modification: {cloned_door_shallow}")
+    print(f"Original door after modification of shallow clone: {original_door}")
+    print("--> Note that the original door's address was also changed because of the shallow copy.")
+
+    # Resetting the original door's address for the next demonstration
+    original_door.address.street = "123 Main St"
+    print(f"\nOriginal door reset: {original_door}")
+
+    print("\nCloning the door using a deep copy.")
+    cloned_door_deep = original_door.clone(deep=True)
+    print(f"Deep cloned door: {cloned_door_deep}")
+
+    print("\nModifying the address of the deep cloned door.")
+    cloned_door_deep.address.street = "789 Pine Ln"
+    print(f"Deep cloned door after modification: {cloned_door_deep}")
+    print(f"Original door after modification of deep clone: {original_door}")
+    print("--> Note that the original door's address remains unchanged.")
 
 if __name__ == '__main__':
     main()

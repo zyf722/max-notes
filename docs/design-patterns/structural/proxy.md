@@ -37,50 +37,113 @@ sidebar_position: 7
 
 ## 代码示例
 
-下面的代码示例展示了一个使用代理模式的 Python 示例，其中 `Door` 作为服务对象，`FrontDoor` 作为服务对象的实现，`DoorOpener` 作为代理对象，控制对 `FrontDoor` 的访问。
+下面的代码示例展示了一个使用代理模式的 Python 示例。`DatabaseExecutor` 是一个接口，`RealDatabaseExecutor` 是实现了该接口的真实服务对象，它直接执行数据库查询。
+
+`DatabaseProxy` 是代理类，它也实现了 `DatabaseExecutor` 接口。这个代理类控制对 `RealDatabaseExecutor` 的访问。它有两个主要功能：
+1.  **访问控制**：在执行查询之前，`_check_access` 方法会检查用户角色。只有 "admin" 用户才能执行查询。
+2.  **延迟初始化**：`RealDatabaseExecutor` 对象直到第一次需要执行查询时才会被创建（`_lazy_init`），这可以节省资源。
+
+客户端代码通过 `DatabaseExecutor` 接口与代理或真实对象进行交互，实现了对访问的控制和对客户端的透明。
 
 ```python livecodes console=full
 # [x] Pattern: Proxy
 # To provide a surrogate or placeholder for another object to control access to it
 
-# Why we use it
-# When we want to control access to an object
-
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
-
-@dataclass
-class Door(ABC):
+# --- Subject Interface ---
+class DatabaseExecutor(ABC):
+    """
+    The Subject interface declares common operations for both RealSubject and
+    the Proxy. As long as the client works with RealSubject using this
+    interface, you'll be able to pass it a proxy instead of a real subject.
+    """
     @abstractmethod
-    def open(self):
+    def execute_query(self, query: str) -> None:
         raise NotImplementedError
 
+# --- Real Subject ---
+class RealDatabaseExecutor(DatabaseExecutor):
+    """
+    The RealSubject contains some core business logic. Usually, RealSubjects are
+    capable of doing some useful work which may also be very slow or sensitive -
+    e.g. correcting input data. A Proxy can solve these issues without any
+    changes to the RealSubject's code.
+    """
+    def execute_query(self, query: str) -> None:
+        print(f"Executing query: '{query}' on the main database.")
 
-@dataclass
-class FrontDoor(Door):
-    def open(self):
-        print("Opening door")
+# --- Proxy ---
+class DatabaseProxy(DatabaseExecutor):
+    """
+    The Proxy has an interface identical to the RealSubject.
+    It maintains a reference to an object of the RealSubject class. It can
+    be responsible for creating and deleting it.
+    """
+    def __init__(self, user_role: str):
+        self._user_role = user_role
+        self._real_executor: RealDatabaseExecutor | None = None
+        print(f"Proxy initialized for user with role: '{self._user_role}'.")
 
+    def _check_access(self) -> bool:
+        """
+        A real-world proxy would perform some access control logic here.
+        """
+        print("Proxy: Checking access prior to firing a real request.")
+        if self._user_role == "admin":
+            return True
+        print("Proxy: Access denied. User is not an admin.")
+        return False
 
-@dataclass
-class DoorOpener(Door):
-    door: Door
-    is_open: bool = False
+    def _lazy_init(self) -> None:
+        """
+        Lazy initialization of the RealSubject.
+        """
+        if self._real_executor is None:
+            print("Proxy: Lazily creating a new RealDatabaseExecutor.")
+            self._real_executor = RealDatabaseExecutor()
 
-    def open(self):
-        if not self.is_open:
-            self.door.open()
-            self.is_open = True
-        else:
-            print("Door is already open")
+    def execute_query(self, query: str) -> None:
+        """
+        The most common applications of the Proxy pattern are lazy loading,
+        caching, controlling the access, logging, etc. A Proxy can perform
+        one of these things and then, depending on the result, pass the
+        execution to the same method in a linked RealSubject object.
+        """
+        if self._check_access():
+            self._lazy_init()
+            # The proxy delegates the work to the real subject.
+            assert self._real_executor is not None
+            self._real_executor.execute_query(query)
 
+# --- Client Code ---
+def client_code(executor: DatabaseExecutor, query: str) -> None:
+    """
+    The client code is supposed to work with all objects (both subjects and
+    proxies) via the Subject interface in order to support both real subjects
+    and proxies.
+    """
+    print(f"\nClient: Attempting to execute query '{query}'.")
+    executor.execute_query(query)
 
-def main():
-    front_door = FrontDoor()
-    door_opener = DoorOpener(front_door)
-    door_opener.open()
-    door_opener.open()
+def main() -> None:
+    """Main execution function."""
+    print("Client: Executing the client code with a real subject:")
+    real_executor = RealDatabaseExecutor()
+    client_code(real_executor, "SELECT * FROM users")
+
+    print("\n" + "="*30)
+
+    print("Client: Executing the same client code with a non-admin proxy:")
+    guest_proxy = DatabaseProxy(user_role="guest")
+    client_code(guest_proxy, "DELETE FROM users")
+
+    print("\n" + "="*30)
+
+    print("Client: Executing the same client code with an admin proxy:")
+    admin_proxy = DatabaseProxy(user_role="admin")
+    client_code(admin_proxy, "UPDATE users SET active = TRUE")
 
 
 if __name__ == "__main__":

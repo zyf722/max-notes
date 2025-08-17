@@ -32,7 +32,17 @@ sidebar_position: 10
 
 ## 代码示例
 
-下面结合了 [组合模式](../structural/composite.md) 的示例展示了访问者模式的实现。在这个示例中，`FileObject` 抽象类代表了文件对象，`File` 和 `Directory` 类分别实现了该抽象类。`FileVisitor` 类接受一个 `FileObject` 对象，访问其所有文件。
+下面结合了图形（Shape）的例子展示了访问者模式的实现。
+
+`Shape` 是一个**元素**接口，它定义了一个 `accept` 方法，该方法接受一个**访问者**对象作为参数。`Dot`, `Circle`, 和 `Rectangle` 是具体的元素类，它们实现了 `accept` 方法。
+
+`Visitor` 是访问者接口，它为每种具体的元素类型（`Dot`, `Circle`, `Rectangle`）都声明了一个 `visit` 方法。`XMLExportVisitor` 和 `DrawVisitor` 是具体的访问者类，它们为不同的操作（导出为 XML 和绘图）提供了具体的实现。
+
+关键的交互在于**双重分派**：
+1.  客户端代码调用一个元素（如 `Circle`）的 `accept` 方法，并将一个访问者（如 `XMLExportVisitor`）传递给它。
+2.  `Circle` 的 `accept` 方法会立即调用访问者的 `visit_circle` 方法，并将自己（`self`）作为参数传回。
+
+这样，访问者就能知道它正在访问的是一个 `Circle` 对象，并执行相应的操作。这种模式允许我们在不修改 `Shape` 类层次结构的情况下，添加新的操作（只需创建一个新的访问者类），从而将数据结构（`Shape`）与作用于其上的操作（`Visitor`）解耦。
 
 :::note
 这里为 `visit_file` 和 `visit_directory` 扩展参数 `parent`，以便在访问文件时能够知道其父目录，从而通过参数构造出的隐式栈实现打印文件绝对路径。
@@ -45,57 +55,110 @@ sidebar_position: 10
 # Why we use it
 # Allows for one or more operations to be applied to a set of objects at runtime without modifying the objects themselves
 
-
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import List
 
-
-@dataclass
-class FileObject(ABC):
-    name: str
-
+# --- Element Interface and Concrete Elements ---
+class Shape(ABC):
+    """
+    The Element interface declares an `accept` method that should take the base
+    visitor interface as an argument.
+    """
     @abstractmethod
-    def accept(self, visitor: "FileVisitor", parent: str):
+    def accept(self, visitor: Visitor) -> None:
         pass
 
+class Dot(Shape):
+    """Concrete Element: Dot."""
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_dot(self)
 
-@dataclass
-class File(FileObject):
-    def accept(self, visitor: "FileVisitor", parent: str):
-        visitor.visit_file(self, parent)
+    def draw(self) -> None:
+        print("Drawing a dot.")
 
+class Circle(Shape):
+    """Concrete Element: Circle."""
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_circle(self)
 
-@dataclass
-class Directory(FileObject):
-    files: List[FileObject]
+    def draw(self) -> None:
+        print("Drawing a circle.")
 
-    def accept(self, visitor: "FileVisitor", parent: str):
-        visitor.visit_directory(self, parent)
+class Rectangle(Shape):
+    """Concrete Element: Rectangle."""
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_rectangle(self)
 
+    def draw(self) -> None:
+        print("Drawing a rectangle.")
 
-@dataclass
-class FileVisitor:
-    def visit_file(self, file: File, parent: str):
-        print(f"Visiting file {parent}{file.name}")
+# --- Visitor Interface and Concrete Visitors ---
+class Visitor(ABC):
+    """
+    The Visitor Interface declares a set of visiting methods that correspond to
+    element classes. The signature of a visiting method allows the visitor to
+    identify the exact class of the element that it's dealing with.
+    """
+    @abstractmethod
+    def visit_dot(self, dot: Dot) -> None:
+        pass
 
-    def visit_directory(self, directory: Directory, parent: str):
-        current_path = parent + directory.name + "/"
-        print(f"Visiting directory {current_path} with {len(directory.files)} files")
-        for file in directory.files:
-            file.accept(self, current_path)
+    @abstractmethod
+    def visit_circle(self, circle: Circle) -> None:
+        pass
 
+    @abstractmethod
+    def visit_rectangle(self, rectangle: Rectangle) -> None:
+        pass
 
-def main():
-    file1 = File("file.conf")
-    file2 = File("text.txt")
-    file3 = File("bin")
-    dir1 = Directory("dir1", [file1, file2])
-    root = Directory("", [file3, dir1])
+class XMLExportVisitor(Visitor):
+    """
+    Concrete Visitors implement several versions of the same algorithm, which
+    can work with all concrete element classes.
+    """
+    def visit_dot(self, dot: Dot) -> None:
+        print("Exporting Dot to XML.")
 
-    visitor = FileVisitor()
-    root.accept(visitor, "")
+    def visit_circle(self, circle: Circle) -> None:
+        print("Exporting Circle to XML.")
 
+    def visit_rectangle(self, rectangle: Rectangle) -> None:
+        print("Exporting Rectangle to XML.")
+
+class DrawVisitor(Visitor):
+    """Another Concrete Visitor for drawing shapes."""
+    def visit_dot(self, dot: Dot) -> None:
+        dot.draw()
+
+    def visit_circle(self, circle: Circle) -> None:
+        circle.draw()
+
+    def visit_rectangle(self, rectangle: Rectangle) -> None:
+        rectangle.draw()
+
+# --- Client Code ---
+def client_code(elements: List[Shape], visitor: Visitor) -> None:
+    """
+
+    The client code can run visitor operations over any set of elements without
+    figuring out their concrete classes. The accept operation directs a call to
+    the appropriate operation in the visitor object.
+    """
+    for element in elements:
+        element.accept(visitor)
+
+def main() -> None:
+    """Main execution function."""
+    shapes: List[Shape] = [Dot(), Circle(), Rectangle()]
+
+    print("Exporting shapes to XML:")
+    export_visitor = XMLExportVisitor()
+    client_code(shapes, export_visitor)
+
+    print("\nDrawing shapes:")
+    draw_visitor = DrawVisitor()
+    client_code(shapes, draw_visitor)
 
 if __name__ == "__main__":
     main()

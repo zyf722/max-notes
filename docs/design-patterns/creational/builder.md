@@ -48,9 +48,8 @@ sidebar_position: 3
 # This will enable you to write functional-programming-style code
 
 # Why we use it
-# When you need to give object creation more flexibility, and you want to seperate the construction of a complex object from its representation
-from abc import abstractmethod
-from dataclasses import field
+# When you need to give object creation more flexibility, and you want to separate the construction of a complex object from its representation
+from __future__ import annotations
 from enum import Enum
 
 
@@ -59,63 +58,75 @@ class DoorColor(Enum):
     BLUE = 2
     GREEN = 3
 
+class Door:
+    """The Product class."""
+    def __init__(self, builder: DoorBuilder):
+        self.width: int = builder.width
+        self.height: int = builder.height
+        self.color: DoorColor = builder.color
+        self.window: bool = builder.window
+        self.handle: bool = builder.handle
+    
+    def __str__(self) -> str:
+        return f'Door: width={self.width}, height={self.height}, color={self.color.name}, window={self.window}, handle={self.handle}'
+
 class DoorBuilder:
-    @abstractmethod
-    def set_width(self, width: int) -> 'DoorBuilder':
+    """The Builder class for Door."""
+    def __init__(self) -> None:
+        # Set default values for the door properties
+        self.width: int = 80
+        self.height: int = 200
+        self.color: DoorColor = DoorColor.RED
+        self.window: bool = False
+        self.handle: bool = True
+
+    def set_width(self, width: int) -> DoorBuilder:
         self.width = width
         return self
 
-    @abstractmethod
-    def set_height(self, height: int) -> 'DoorBuilder':
+    def set_height(self, height: int) -> DoorBuilder:
         self.height = height
         return self
 
-    @abstractmethod
-    def set_color(self, color: DoorColor) -> 'DoorBuilder':
+    def set_color(self, color: DoorColor) -> DoorBuilder:
         self.color = color
         return self
 
-    @abstractmethod
-    def set_window(self, window: bool) -> 'DoorBuilder':
-        self.window = window
+    def set_window(self, has_window: bool) -> DoorBuilder:
+        self.window = has_window
         return self
 
-    @abstractmethod
-    def set_handle(self, handle: bool) -> 'DoorBuilder':
-        self.handle = handle
+    def set_handle(self, has_handle: bool) -> DoorBuilder:
+        self.handle = has_handle
         return self
 
-    @abstractmethod
-    def build(self) -> 'Door':
+    def build(self) -> Door:
+        # Validation logic can be placed here
+        if self.width <= 0 or self.height <= 0:
+            raise ValueError("Width and height must be positive.")
         return Door(self)
 
-class Door:
-    width: int
-    height: int
-
-    color: DoorColor = field(default=DoorColor.RED)
-    window: bool = field(default=False)
-    handle: bool = field(default=False)
-
-    def __init__(self, builder: DoorBuilder):
-        self.width = builder.width
-        self.height = builder.height
-        self.color = builder.color
-        self.window = builder.window
-        self.handle = builder.handle
-    
-    def __str__(self):
-        return f'Door: width={self.width}, height={self.height}, color={self.color}, window={self.window}, handle={self.handle}'
-
-def main():
-    door = DoorBuilder()
+def main() -> None:
+    """Client code."""
+    door = (
+        DoorBuilder()
         .set_width(100)
-        .set_height(200)
+        .set_height(220)
         .set_color(DoorColor.BLUE)
         .set_window(True)
         .set_handle(True)
         .build()
+    )
     print(door)
+
+    print("\nBuilding another door with some default properties:")
+    default_door = (
+        DoorBuilder()
+        .set_width(90)
+        .set_height(210)
+        .build()
+    )
+    print(default_door)
     
 
 if __name__ == '__main__':

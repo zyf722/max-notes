@@ -36,7 +36,9 @@ sidebar_position: 4
 
 ## 代码示例
 
-下面使用 Python 实现了一个简单的装饰器模式示例，其中有一个 `Door` 抽象类，`FrontDoor` 类实现了该抽象类，`DoorAlarm` 类则通过**组合**接受 `Door` 对象，并在其 `open` 方法中添加了额外的行为。
+下面的代码示例展示了装饰器模式的实现。`Notifier` 是一个组件接口，`EmailNotifier` 是一个具体的功能组件。`BaseDecorator` 是所有装饰器的基类，它也实现了 `Notifier` 接口。`SMSDecorator` 和 `SlackDecorator` 是具体的装饰器，它们包装了 `Notifier` 对象，并在调用其 `send` 方法的基础上添加了额外的通知功能。
+
+客户端代码可以通过 `Notifier` 接口与简单组件（`EmailNotifier`）和装饰后的组件进行交互，而无需关心其具体实现。装饰器可以嵌套使用，从而动态地组合不同的行为。
 
 ```python livecodes console=full
 # [x] Pattern: Decorator
@@ -45,41 +47,89 @@ sidebar_position: 4
 # Why we use it
 # When we want to add behavior to an object without changing its class
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
-
-@dataclass
-class Door(ABC):
+# --- Component Interface ---
+class Notifier(ABC):
+    """
+    The base Component interface defines operations that can be altered by
+    decorators.
+    """
     @abstractmethod
-    def open(self):
-        raise NotImplementedError
+    def send(self, message: str) -> None:
+        pass
 
+# --- Concrete Component ---
+class EmailNotifier(Notifier):
+    """
+    Concrete Components provide default implementations of the operations. There
+    might be several variations of these classes.
+    """
+    def send(self, message: str) -> None:
+        print(f"Sending email with message: '{message}'")
 
-@dataclass
-class FrontDoor(Door):
-    def open(self):
-        print("Opening front door")
+# --- Base Decorator ---
+class BaseDecorator(Notifier):
+    """
+    The base Decorator class follows the same interface as the other
+    components. The primary purpose of this class is to define the wrapping
+    interface for all concrete decorators.
+    """
+    def __init__(self, wrappee: Notifier):
+        self._wrappee = wrappee
 
+    def send(self, message: str) -> None:
+        """
+        The Decorator delegates all work to the wrapped component.
+        """
+        self._wrappee.send(message)
 
-@dataclass
-class DoorAlarm(Door):
-    door: Door
+# --- Concrete Decorators ---
+class SMSDecorator(BaseDecorator):
+    """
+    Concrete Decorators call the wrapped object and alter its result in some
+    way.
+    """
+    def send(self, message: str) -> None:
+        """
+        Decorators can execute their behavior either before or after the call to
+        a wrapped object.
+        """
+        super().send(message)
+        print(f"Sending SMS with message: '{message}'")
 
-    def open(self):
-        print("Door alarm activated")
-        self.door.open()
+class SlackDecorator(BaseDecorator):
+    """Another Concrete Decorator."""
+    def send(self, message: str) -> None:
+        super().send(message)
+        print(f"Sending Slack message: '{message}'")
 
+# --- Client Code ---
+def client_code(component: Notifier, message: str) -> None:
+    """
+    The client code works with all objects using the Component interface. This
+    way it can stay independent of the concrete classes of components it works
+    with.
+    """
+    component.send(message)
 
-def open_door(door: Door):
-    door.open()
+def main() -> None:
+    """Main execution function."""
+    # This way the client code can support both simple components...
+    simple_notifier = EmailNotifier()
+    print("Client: I've got a simple component:")
+    client_code(simple_notifier, "Hello, World!")
+    print("-" * 20)
 
-
-def main():
-    front_door = FrontDoor()
-    door_alarm = DoorAlarm(front_door)
-    open_door(door_alarm)
-
+    # ...and decorated ones.
+    # Note how decorators can wrap not only simple components but the other
+    # decorators as well.
+    sms_notifier = SMSDecorator(simple_notifier)
+    slack_and_sms_notifier = SlackDecorator(sms_notifier)
+    
+    print("Client: Now I've got a decorated component:")
+    client_code(slack_and_sms_notifier, "Hello, decorated World!")
 
 if __name__ == "__main__":
     main()
